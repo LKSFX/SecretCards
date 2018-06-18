@@ -307,6 +307,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cf5a6aa17969b94ebda32da34c0f401, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  clickManager: {fileID: 2120779856}
   debug: 0
 --- !u!1 &594499981
 GameObject:
@@ -1177,3 +1178,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48fdd2b54ea9e9c4cb82e4408fdb7f06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  deckTable: {fileID: 577811350}

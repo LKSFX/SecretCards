@@ -5,13 +5,48 @@ using System;
 
 public class DeckBaseScript : MonoBehaviour {
 
+    public ClickManager clickManager;
     CardScript[] deck;
-    public bool debug = false;
+    List<CardScript> unrevealedCards;
+    public bool isDebug = false;
+    private bool isIntro = true; // indica 'true' enquanto as cartas estiverem em modo de amostra
+    private int score = 3; // o jogo começa com três vidas
+    private int turns = 7; // viradas para o fim
 
 	// Use this for initialization
 	void Start () {
         // todas as cartas ficam neste array
         deck = GetComponentsInChildren<CardScript>();
+        foreach (CardScript card in deck)
+            card.setDeck(this);
+        sort();
+	}
+
+    public void checkForPoint() {
+        Debug.Log("Checking table for a point.");
+    }
+
+	// Update is called once per frame
+	void Update () {
+		
+	}
+
+    public void resetDeck() {
+        isIntro = true;
+        clickManager.setClickLock(isIntro);
+    }
+
+    public void unlockClick() {
+        // se ainda não, libera cartas para serem clicadas
+        if (isIntro) {
+            isIntro = false;
+            clickManager.setClickLock(isIntro);
+        }
+    }
+
+    // define e embaralha as cartas
+    public void sort() {
+        // as cartas são definidas aleatóriamente aqui
         int[] Nipes = obtainNipes(4, 0, 10);
         int[] NipesDuplicated = obtainDuplicatedExceptOne(Nipes);
         List<int> cardList = new List<int>(NipesDuplicated);
@@ -24,14 +59,10 @@ public class DeckBaseScript : MonoBehaviour {
             // ---------
             //Debug.Log("choose is " + ": " + chooseCard);
         }
+        // após definidas, as cartas são mostradas em um dos 6 modos
         StartCoroutine(ShowDeckMode(0, 2));
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
+    }
+    
     IEnumerator ShowDeckMode(int mode, float after) {
         yield return new WaitForSeconds(after);
         StartCoroutine(ShowFullHouse(3));
@@ -39,14 +70,54 @@ public class DeckBaseScript : MonoBehaviour {
     }
 
     IEnumerator ShowFullHouse(float duration) {
+        showCards();
+        yield return new WaitForSeconds(duration);
+        hideCards();
+        Debug.Log("Show Deck End");
+    }
+
+    public void showCards() {
+        showCards(false); // mostra todas as cartas e não salva estado delas
+    }
+
+    /// <summary>
+    /// Revela todas as cartas simultaneamente 
+    /// </summary>
+    /// <param name="saveDelta">se verdadeiro, salva as cartas que foram mostradas para virá-las posteriormente.</param>
+    public void showCards(bool saveDelta) {
+        if (saveDelta) unrevealedCards = new List<CardScript>();
         foreach (CardScript card in deck) {
+            if (saveDelta && !card.isFliped) {
+                unrevealedCards.Add(card);
+            }
             card.flipCard(true);
         }
-        yield return new WaitForSeconds(duration);
-        //foreach (CardScript card in deck) {
-        //    card.flipCard(false);
-        //}
-        Debug.Log("Show Deck End");
+    }
+
+    public void hideCards() {
+        hideCards(true); // esconde obrigatoriamente todas as cartas.
+    }
+
+    /// <summary>
+    /// Esconde todas as cartas ao mesmo tempo
+    /// </summary>
+    /// <param name="forceAll">Se ativado, todas as cartas serão escondidas.</param>
+    public void hideCards(bool forceAll) {
+        // esta função pode ser reduzida, e muito!
+        if (!forceAll && (unrevealedCards != null && unrevealedCards.Count > 0)) {
+            // se a carta já foi revelada pelo clique válido do mouse, não será escondida novamente.
+            // isto ocorre apenas se 'forceAll' for falso
+            foreach (CardScript card in unrevealedCards) {
+                card.flipCard(false);
+            }
+        }
+        else { 
+            // isto ocorre quando nenhuma carta foi revelada ainda ou 'forceAll' for verdadeiro.
+            foreach (CardScript card in deck) {
+                card.flipCard(false);
+            }
+        }
+        Invoke("unlockClick", 0.2f);
     }
 
     // retorna 3 inteiros não repetidos entre determinados valores
@@ -74,7 +145,7 @@ public class DeckBaseScript : MonoBehaviour {
                     if (currentVal > max) currentVal = min;
                 }
                 valuesList[i] = currentVal;
-                if (debug) Debug.Log("Nipe " + i + ": " + currentVal);
+                if (isDebug) Debug.Log("Nipe " + i + ": " + currentVal);
             }
             values = valuesList.ToArray();
         }
@@ -89,7 +160,7 @@ public class DeckBaseScript : MonoBehaviour {
             if (entry[i] == wildcard) continue;
             values[z++] = entry[i];
         }
-        if (debug) Debug.Log("NipeDuplicated " + String.Join("", new List<int>(values).ConvertAll(i => i.ToString()).ToArray()));
+        if (isDebug) Debug.Log("NipeDuplicated " + String.Join("", new List<int>(values).ConvertAll(i => i.ToString()).ToArray()));
         return values;
     }
 

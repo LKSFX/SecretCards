@@ -8,6 +8,8 @@ using UnityEngine.UI;
 public class CardScript : MonoBehaviour {
 
     Animator animator;
+    DeckBaseScript deck; // referência ao deck
+    public bool isFliped { get { return animator.GetBool("Flipped"); } } // descobre se esta carta está virada
     static string[] suitList = new string[] { "Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
         "Uranus", "Neptune", "Pluto", "Moon" };
 
@@ -33,17 +35,33 @@ public class CardScript : MonoBehaviour {
 
     // Vira a carta para cima quando true, ou vice-versa.
     public void flipCard(bool stat) {
-        animator.SetBool("Flipped", stat);
-        StartCoroutine(ShowInfoWithDelay(stat, stat ? 0.45f : 0.1f));
+        flipCard(stat, false);
     }
 
-    IEnumerator ShowInfoWithDelay(bool show, float delay) {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="stat"></param>
+    /// <param name="valid">Verdadeiro se essa virada converte ponto.</param>
+    public void flipCard(bool stat, bool valid) {
+        if (animator.GetBool("Flipped") == stat) return; // evita chamada desnecessária
+        animator.SetBool("Flipped", stat);
+        StartCoroutine(ShowInfoWithDelay(stat, valid, stat ? 0.45f : 0.1f));
+    }
+
+    IEnumerator ShowInfoWithDelay(bool show, bool valid, float delay) {
         yield return new WaitForSeconds(delay);
         transform.Find("Info").gameObject.SetActive(show);
+        if (show && valid) deck.checkForPoint(); // verifica se um ponto foi convertido
     }
 
     // definir a carta pelo nome
     public void setCard(string name) { }
+
+    // Associa deck para futura chamadas 
+    public void setDeck(DeckBaseScript mainDeck) {
+        deck = mainDeck;
+    }
 
     // definir a carta pelo número
     public void setCard(int value) {
