@@ -6,24 +6,57 @@ using System;
 public class DeckBaseScript : MonoBehaviour {
 
     public ClickManager clickManager;
+    public bool isDebug = false;
     CardScript[] deck;
     List<CardScript> unrevealedCards;
-    public bool isDebug = false;
-    private bool isIntro = true; // indica 'true' enquanto as cartas estiverem em modo de amostra
+    private CardScript lastCardChoosed;
+    private bool isOnInterval = true; // indica 'true' enquanto as cartas estiverem em modo de amostra
+    private int wildcardId = -1;
     private int score = 3; // o jogo começa com três vidas
-    private int turns = 7; // viradas para o fim
 
 	// Use this for initialization
 	void Start () {
         // todas as cartas ficam neste array
         deck = GetComponentsInChildren<CardScript>();
         foreach (CardScript card in deck)
-            card.setDeck(this);
+            card.setDeck(this); // Para futuras chamadas, associa este deck à todas as cartas
         sort();
 	}
 
-    public void checkForPoint() {
+    public void checkForPoint(CardScript card) {
         Debug.Log("Checking table for a point.");
+        if (card.numberId == wildcardId) {
+            // caso o curinga seja selecionado, perde-se ponto
+            Debug.Log("You selected a forbidden card! Lost one point!");
+            score -= 1;
+            updateScore();
+            // carta é ocultada novamente após intervalo
+            lockClick();
+            StartCoroutine(FlipCardsAndUnlockDelay(2f, card));
+            return;
+        }
+        if (lastCardChoosed == null) {
+            // nenhuma carta selecionada anteriormente
+            // salva a carta para futura checagem
+            lastCardChoosed = card;
+        }
+        else {
+            // já há uma carta anteriomente selecionada
+            // checa a validade da escolha
+            if (lastCardChoosed.numberId == card.numberId) {
+                Debug.Log("Correct pair. Point!");
+                score += 1; // um ponto ganho pelo acerto
+            } else {
+                // cartas não compoem o par
+                Debug.Log("Incorrect pair. Lost one point!");
+                score -= 1; // perde-se um ponto
+                // cartas são ocultadas novamente após intervalo
+                lockClick();
+                StartCoroutine(FlipCardsAndUnlockDelay(2f, card, lastCardChoosed));
+            }
+            lastCardChoosed = null; // não é mais necessária essa referência
+            updateScore();
+        }
     }
 
 	// Update is called once per frame
@@ -32,16 +65,34 @@ public class DeckBaseScript : MonoBehaviour {
 	}
 
     public void resetDeck() {
-        isIntro = true;
-        clickManager.setClickLock(isIntro);
+        // chamar esse método ao fim da rodada
+        lockClick();
+    }
+
+    public void lockClick() {
+        // não permite que as cartas sejam clicadas
+        isOnInterval = true;
+        clickManager.setClickLock(isOnInterval);
     }
 
     public void unlockClick() {
         // se ainda não, libera cartas para serem clicadas
-        if (isIntro) {
-            isIntro = false;
-            clickManager.setClickLock(isIntro);
+        if (isOnInterval) {
+            isOnInterval = false;
+            clickManager.setClickLock(isOnInterval);
         }
+    }
+
+    IEnumerator FlipCardsAndUnlockDelay(float delay, params CardScript[] cards) {
+        yield return new WaitForSeconds(delay);
+        foreach (CardScript c in cards)
+            c.flipCard(false);
+        Invoke("unlockClick", 0.5f);
+    }
+
+    private void updateScore() {
+        // atualiza score no canvas
+        // chamar essa função sempre que haja mudança na pontuação
     }
 
     // define e embaralha as cartas
@@ -161,6 +212,8 @@ public class DeckBaseScript : MonoBehaviour {
             values[z++] = entry[i];
         }
         if (isDebug) Debug.Log("NipeDuplicated " + String.Join("", new List<int>(values).ConvertAll(i => i.ToString()).ToArray()));
+        // salva o valor do curinga na variável 'wildcardId' para checagem durante o processo de checagem de escolhas
+        wildcardId = wildcard;
         return values;
     }
 

@@ -12,6 +12,7 @@ public class CardScript : MonoBehaviour {
     public bool isFliped { get { return animator.GetBool("Flipped"); } } // descobre se esta carta está virada
     static string[] suitList = new string[] { "Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
         "Uranus", "Neptune", "Pluto", "Moon" };
+    public int numberId { get; private set; }
 
     // Isto ocorre antes do Start
     void Awake () {
@@ -52,7 +53,7 @@ public class CardScript : MonoBehaviour {
     IEnumerator ShowInfoWithDelay(bool show, bool valid, float delay) {
         yield return new WaitForSeconds(delay);
         transform.Find("Info").gameObject.SetActive(show);
-        if (show && valid) deck.checkForPoint(); // verifica se um ponto foi convertido
+        if (show && valid) deck.checkForPoint(this); // verifica se um ponto foi convertido
     }
 
     // definir a carta pelo nome
@@ -74,5 +75,6 @@ public class CardScript : MonoBehaviour {
         Text nameLabel = transform.Find("Info/Name").GetComponent<Text>();
         numberLabel.text = value.ToString();
         nameLabel.text = thisCardName;
+        numberId = value; // para futuras checagens
     }
 }
