@@ -7,15 +7,17 @@ public class DeckBaseScript : MonoBehaviour {
 
     public ClickManager clickManager;
     public bool isDebug = false;
+    public bool isClickLocked { get { return clickManager.isClickLocked; } set { } }
     CardScript[] deck;
     List<CardScript> unrevealedCards;
     private CardScript lastCardChoosed;
     private bool isOnInterval = true; // indica 'true' enquanto as cartas estiverem em modo de amostra
     private int wildcardId = -1;
     private int score = 3; // o jogo começa com três vidas
+    private int isDeckPeekActive = -1; // evita que a função de teste 'show' seja chamada duas vezes seguidas
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
         // todas as cartas ficam neste array
         deck = GetComponentsInChildren<CardScript>();
         foreach (CardScript card in deck)
@@ -147,6 +149,27 @@ public class DeckBaseScript : MonoBehaviour {
 
     public void hideCards() {
         hideCards(true); // esconde obrigatoriamente todas as cartas.
+    }
+
+    /// <summary>
+    /// Permite espiar as cartas, útil para a fase de testes
+    /// </summary>
+    /// <param name="active">se está ou não ativo o modo peeking</param>
+    public void peekCards(bool active) {
+        if (active) {
+            // espiar cartas
+            if (isDeckPeekActive < 1) {
+                showCards(true);
+                isDeckPeekActive = 1;
+            }
+        }
+        else {
+            // termina de espiar cartas
+            if (isDeckPeekActive > 0) {
+                hideCards(false);
+                isDeckPeekActive = 0;
+            }
+        }
     }
 
     /// <summary>

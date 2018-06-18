@@ -5,12 +5,11 @@ using UnityEngine;
 public class ClickManager : MonoBehaviour {
 
     public GameObject deckTable;
-    bool isClickLocked = true; // ao iniciar o level, virar a carta é proibido
-    int isDeckPeekActive = -1; // evita que a função de teste 'show' seja chamada duas vezes seguidas
+    public bool isClickLocked { get; private set; } // ao iniciar o level, virar a carta é proibido
 
 	// Use this for initialization
 	void Start () {
-		
+        isClickLocked = true;
 	}
 	
     public void setClickLock(bool stat) {
@@ -32,21 +31,16 @@ public class ClickManager : MonoBehaviour {
                 card.flipCard(true, true);
             }
         }
-        // espiar cartas, útil em testes 
+        // atalhos para espiar cartas, útil em testes 
         if (Input.GetKeyDown(KeyCode.Space)) {
-
             if (Input.GetKey(KeyCode.LeftControl)) {// esconde todas as cartas
-                if (isDeckPeekActive > 0) {
-                    deckTable.GetComponent<DeckBaseScript>().hideCards(false);
-                    isDeckPeekActive = 0;
-                }
+                deckTable.GetComponent<DeckBaseScript>().peekCards(false);
             }
             else {// mostra todas as cartas
-                if (isDeckPeekActive < 1) {
-                    deckTable.GetComponent<DeckBaseScript>().showCards(true);
-                    isDeckPeekActive = 1;
-                }
+                deckTable.GetComponent<DeckBaseScript>().peekCards(true);
             }
         }
 	}
+
+    
 }

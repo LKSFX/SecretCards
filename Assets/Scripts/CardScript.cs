@@ -45,7 +45,9 @@ public class CardScript : MonoBehaviour {
     /// <param name="stat"></param>
     /// <param name="valid">Verdadeiro se essa virada converte ponto.</param>
     public void flipCard(bool stat, bool valid) {
-        if (animator.GetBool("Flipped") == stat) return; // evita chamada desnecessária
+        // evita chamada desnecessária quando a carta já se encontra no estado requerido
+        if (animator.GetBool("Flipped") == stat)
+            return; 
         animator.SetBool("Flipped", stat);
         StartCoroutine(ShowInfoWithDelay(stat, valid, stat ? 0.45f : 0.1f));
     }
