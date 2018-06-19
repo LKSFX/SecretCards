@@ -10,6 +10,7 @@ public class DeckBaseScript : MonoBehaviour {
     public GameObject testCanvas;
     public GameObject sortingAlert;
     public bool isDebug = false;
+    public bool isTestCanvasOn = false;
     public bool isClickLocked { get { return clickManager.isClickLocked; } set { } }
     CardScript[] deck;
     List<CardScript> unrevealedCards;
@@ -101,14 +102,6 @@ public class DeckBaseScript : MonoBehaviour {
         }
     }
 
-    IEnumerator HideCardsAndUnlockDelay(float delay, params CardScript[] cards) {
-        yield return new WaitForSeconds(delay);
-        foreach (CardScript c in cards)
-            if (c != null) c.flipCard(false);
-        Invoke("unlockClick", 0.5f);
-        lastCardChoosed = null; // não é mais necessária essa referência
-    }
-
     private void updateScore() {
         // atualiza score no canvas
         // chamar essa função sempre que haja mudança na pontuação
@@ -124,40 +117,65 @@ public class DeckBaseScript : MonoBehaviour {
         }
     }
 
-    // define e embaralha as cartas, esta função deve ser chamada ao iniciar a rodada.
-    public void sort() {
-        pairs = 0; // registro de pares é zerado
-        updateScore(); // reinicia placar
-        if (sortingAlert != null) sortingAlert.gameObject.SetActive(true); // apenas em teste mostra aviso
-        // as cartas são definidas aleatóriamente aqui
-        int[] Nipes = obtainNipes(4, 0, 10);
-        int[] NipesDuplicated = obtainDuplicatedExceptOne(Nipes);
-        List<int> cardList = new List<int>(NipesDuplicated);
-        foreach (CardScript card in deck) {
-            // randomiza posição das cartas pela última vez
-            int randomVal = UnityEngine.Random.Range(0, cardList.Count - 1);
-            int chooseCard = cardList[randomVal];
-            card.setCard(chooseCard);
-            cardList.RemoveAt(randomVal);
-            // ---------
-            //Debug.Log("choose is " + ": " + chooseCard);
+    public void updateAlertTestCanvas(bool active, string text) {
+        if (isTestCanvasOn && sortingAlert != null) {
+            // apenas em teste mostra aviso
+            sortingAlert.GetComponent<Text>().text = text;
+            sortingAlert.gameObject.SetActive(active);
         }
-        // após definidas, as cartas são mostradas em um dos 6 modos
-        StartCoroutine(ShowDeckMode(0, 2));
     }
-    
+
+    IEnumerator HideCardsAndUnlockDelay(float delay, params CardScript[] cards) {
+        yield return new WaitForSeconds(delay);
+        foreach (CardScript c in cards)
+            if (c != null) c.flipCard(false);
+        Invoke("unlockClick", 0.5f);
+        lastCardChoosed = null; // não é mais necessária essa referência
+    }
+
     IEnumerator ShowDeckMode(int mode, float after) {
         yield return new WaitForSeconds(after);
-        StartCoroutine(ShowFullHouse(3));
-        Debug.Log("Show Deck Start");
+        //StartCoroutine(ShowFullHouse(3));
+        //StartCoroutine(ShowFlush(.8f));
+        StartCoroutine(ShowThreeOfAKind(3));
     }
 
     IEnumerator ShowFullHouse(float duration) {
+        updateAlertTestCanvas(true, "Full House");
         showCards();
         yield return new WaitForSeconds(duration);
         hideCards();
-        Debug.Log("Show Deck End");
+        updateAlertTestCanvas(false, "");
     }
+
+    IEnumerator ShowFlush(float delay) {
+        updateAlertTestCanvas(true, "Flush");
+        foreach (CardScript card in deck) {
+            card.flipCard(true);
+            yield return new WaitForSeconds(delay + .4f);
+            card.flipCard(false);
+            yield return new WaitForSeconds(.4f);
+        }
+        Invoke("unlockClick", 0.2f); // desbloqueia tela para cliques
+        updateAlertTestCanvas(false, "");
+    }
+
+    IEnumerator ShowThreeOfAKind(float duration) {
+        updateAlertTestCanvas(true, "Three of a Kind");
+        // seleciona uma carta de cada par
+        List<CardScript> parSelection = obtainOneFromAPair();
+        // vira cartas obtidas dos pares
+        foreach (CardScript card in parSelection) {
+            card.flipCard(true);
+        }
+        yield return new WaitForSeconds(duration + .4f);
+        // desvira cartas
+        hideCards(false, true); // esconde cartas, desbloqueia tela
+        yield return new WaitForSeconds(.4f);
+        updateAlertTestCanvas(false, "");
+    }
+
+    #region hideAndShow
 
     public void showCards() {
         showCards(false); // mostra todas as cartas e não salva estado delas
@@ -175,32 +193,10 @@ public class DeckBaseScript : MonoBehaviour {
             }
             card.flipCard(true);
         }
-        if (sortingAlert != null) sortingAlert.gameObject.SetActive(false);
     }
 
     public void hideCards() {
         hideCards(true, true); // esconde obrigatoriamente todas as cartas.
-    }
-
-    /// <summary>
-    /// Permite espiar as cartas, útil para a fase de testes
-    /// </summary>
-    /// <param name="active">se está ou não ativo o modo peeking</param>
-    public void peekCards(bool active) {
-        if (active) {
-            // espiar cartas
-            if (isDeckPeekActive < 1) {
-                showCards(true);
-                isDeckPeekActive = 1;
-            }
-        }
-        else {
-            // termina de espiar cartas
-            if (isDeckPeekActive > 0) {
-                hideCards(false, true);
-                isDeckPeekActive = 0;
-            }
-        }
     }
 
     /// <summary>
@@ -226,6 +222,54 @@ public class DeckBaseScript : MonoBehaviour {
         if (unlockAfter)
             Invoke("unlockClick", 0.2f);
     }
+
+    /// <summary>
+    /// Permite espiar as cartas, útil para a fase de testes
+    /// </summary>
+    /// <param name="active">se está ou não ativo o modo peeking</param>
+    public void peekCards(bool active) {
+        if (active) {
+            // espiar cartas
+            if (isDeckPeekActive < 1) {
+                showCards(true);
+                isDeckPeekActive = 1;
+            }
+        }
+        else {
+            // termina de espiar cartas
+            if (isDeckPeekActive > 0) {
+                hideCards(false, true);
+                isDeckPeekActive = 0;
+            }
+        }
+    }
+
+
+    #endregion
+
+    // define e embaralha as cartas, esta função deve ser chamada ao iniciar a rodada.
+    public void sort() {
+        pairs = 0; // registro de pares é zerado
+        updateScore(); // reinicia placar
+        updateAlertTestCanvas(true, "Sorting...");
+        // as cartas são definidas aleatóriamente aqui
+        int[] Nipes = obtainNipes(4, 0, 10);
+        int[] NipesDuplicated = obtainDuplicatedExceptOne(Nipes);
+        List<int> cardList = new List<int>(NipesDuplicated);
+        foreach (CardScript card in deck) {
+            // randomiza posição das cartas pela última vez
+            int randomVal = UnityEngine.Random.Range(0, cardList.Count - 1);
+            int chooseCard = cardList[randomVal];
+            card.setCard(chooseCard);
+            cardList.RemoveAt(randomVal);
+            // ---------
+            //Debug.Log("choose is " + ": " + chooseCard);
+        }
+        // após definidas, as cartas são mostradas em um dos 6 modos
+        StartCoroutine(ShowDeckMode(0, 2));
+    }
+
+    #region elemental sorting functions
 
     // retorna 3 inteiros não repetidos entre determinados valores
     int[] obtainNipes(int size, int min, int max) {
@@ -259,6 +303,22 @@ public class DeckBaseScript : MonoBehaviour {
         return shuffle(values); // retornar valores embaralhados
     }
 
+    // obtém uma lista com uma carta de cada par
+    List<CardScript> obtainOneFromAPair() {
+        List<CardScript> parSelection = new List<CardScript>();
+        List<int> ids = new List<int>();
+        int currentId;
+        foreach (CardScript c in deck) {
+            currentId = c.numberId;
+            if (currentId != wildcardId && !ids.Contains(currentId)) {
+                // quando a carta não for o curinga
+                parSelection.Add(c);
+                ids.Add(currentId);
+            }
+        }
+        return parSelection;
+    }
+
     int[] obtainDuplicatedExceptOne(int[] entry) {
         int[] values = new int[(entry.Length*2)-1];
         int wildcard = entry[UnityEngine.Random.Range(0, entry.Length-1)]; //escolhe um dos números da lista para ser o curinga
@@ -284,4 +344,5 @@ public class DeckBaseScript : MonoBehaviour {
         }
         return values;
     }
+    #endregion
 }
