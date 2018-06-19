@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 
 public class DeckBaseScript : MonoBehaviour {
 
     public ClickManager clickManager;
+    public GameObject testCanvas;
+    public GameObject sortingAlert;
     public bool isDebug = false;
     public bool isClickLocked { get { return clickManager.isClickLocked; } set { } }
     CardScript[] deck;
@@ -13,6 +16,7 @@ public class DeckBaseScript : MonoBehaviour {
     private CardScript lastCardChoosed;
     private bool isOnInterval = true; // indica 'true' enquanto as cartas estiverem em modo de amostra
     private int wildcardId = -1;
+    private int pairs = 0; // registro de pares formados
     private int score = 3; // o jogo começa com três vidas
     private int isDeckPeekActive = -1; // evita que a função de teste 'show' seja chamada duas vezes seguidas
 
@@ -34,7 +38,7 @@ public class DeckBaseScript : MonoBehaviour {
             updateScore();
             // carta é ocultada novamente após intervalo
             lockClick();
-            StartCoroutine(FlipCardsAndUnlockDelay(2f, card));
+            StartCoroutine(HideCardsAndUnlockDelay(2f, card, lastCardChoosed));
             return;
         }
         if (lastCardChoosed == null) {
@@ -46,17 +50,18 @@ public class DeckBaseScript : MonoBehaviour {
             // já há uma carta anteriomente selecionada
             // checa a validade da escolha
             if (lastCardChoosed.numberId == card.numberId) {
+                // cartas compõem o par
                 Debug.Log("Correct pair. Point!");
-                score += 1; // um ponto ganho pelo acerto
+                pairs += 1; // o par é registrado
+                lastCardChoosed = null; // desassocia última escolha
             } else {
-                // cartas não compoem o par
+                // cartas não formam o par
                 Debug.Log("Incorrect pair. Lost one point!");
                 score -= 1; // perde-se um ponto
                 // cartas são ocultadas novamente após intervalo
                 lockClick();
-                StartCoroutine(FlipCardsAndUnlockDelay(2f, card, lastCardChoosed));
+                StartCoroutine(HideCardsAndUnlockDelay(2f, card, lastCardChoosed));
             }
-            lastCardChoosed = null; // não é mais necessária essa referência
             updateScore();
         }
     }
@@ -66,9 +71,20 @@ public class DeckBaseScript : MonoBehaviour {
 		
 	}
 
+    // esta função, que chamará o inicio de uma nova, deve ser invocada no termino da rodada
     public void resetDeck() {
         // chamar esse método ao fim da rodada
+        lastCardChoosed = null;
+        hideCards(true, false); // esconde todas as cartas
         lockClick();
+        Invoke("sort", 1);
+    }
+
+    // usado para testes
+    public void gameReset() {
+        // quando o botão reset é clicado 
+        score = 3;
+        resetDeck();
     }
 
     public void lockClick() {
@@ -85,20 +101,34 @@ public class DeckBaseScript : MonoBehaviour {
         }
     }
 
-    IEnumerator FlipCardsAndUnlockDelay(float delay, params CardScript[] cards) {
+    IEnumerator HideCardsAndUnlockDelay(float delay, params CardScript[] cards) {
         yield return new WaitForSeconds(delay);
         foreach (CardScript c in cards)
-            c.flipCard(false);
+            if (c != null) c.flipCard(false);
         Invoke("unlockClick", 0.5f);
+        lastCardChoosed = null; // não é mais necessária essa referência
     }
 
     private void updateScore() {
         // atualiza score no canvas
         // chamar essa função sempre que haja mudança na pontuação
+        if (pairs == 3) {
+            // aqui todos os pares foram formados
+            // jogador vence e ganha uma vida, uma nova partida deverá iniciar
+            score += 1; // ganha um ponto ganho pela rodada
+            lockClick();
+            Invoke("resetDeck", 2);
+        }
+        if (testCanvas != null && testCanvas.activeInHierarchy) { // atualiza score no canvas de teste
+            testCanvas.transform.Find("Scores/Points").GetComponent<Text>().text = score.ToString();
+        }
     }
 
-    // define e embaralha as cartas
+    // define e embaralha as cartas, esta função deve ser chamada ao iniciar a rodada.
     public void sort() {
+        pairs = 0; // registro de pares é zerado
+        updateScore(); // reinicia placar
+        if (sortingAlert != null) sortingAlert.gameObject.SetActive(true); // apenas em teste mostra aviso
         // as cartas são definidas aleatóriamente aqui
         int[] Nipes = obtainNipes(4, 0, 10);
         int[] NipesDuplicated = obtainDuplicatedExceptOne(Nipes);
@@ -145,10 +175,11 @@ public class DeckBaseScript : MonoBehaviour {
             }
             card.flipCard(true);
         }
+        if (sortingAlert != null) sortingAlert.gameObject.SetActive(false);
     }
 
     public void hideCards() {
-        hideCards(true); // esconde obrigatoriamente todas as cartas.
+        hideCards(true, true); // esconde obrigatoriamente todas as cartas.
     }
 
     /// <summary>
@@ -166,7 +197,7 @@ public class DeckBaseScript : MonoBehaviour {
         else {
             // termina de espiar cartas
             if (isDeckPeekActive > 0) {
-                hideCards(false);
+                hideCards(false, true);
                 isDeckPeekActive = 0;
             }
         }
@@ -175,8 +206,9 @@ public class DeckBaseScript : MonoBehaviour {
     /// <summary>
     /// Esconde todas as cartas ao mesmo tempo
     /// </summary>
-    /// <param name="forceAll">Se ativado, todas as cartas serão escondidas.</param>
-    public void hideCards(bool forceAll) {
+    /// <param name="forceAll">Se 'true', todas as cartas serão escondidas.</param>
+    /// <param name="unlockAfter">Se 'true', destrava o touch após virar as cartas.</param>
+    public void hideCards(bool forceAll, bool unlockAfter) {
         // esta função pode ser reduzida, e muito!
         if (!forceAll && (unrevealedCards != null && unrevealedCards.Count > 0)) {
             // se a carta já foi revelada pelo clique válido do mouse, não será escondida novamente.
@@ -191,7 +223,8 @@ public class DeckBaseScript : MonoBehaviour {
                 card.flipCard(false);
             }
         }
-        Invoke("unlockClick", 0.2f);
+        if (unlockAfter)
+            Invoke("unlockClick", 0.2f);
     }
 
     // retorna 3 inteiros não repetidos entre determinados valores
