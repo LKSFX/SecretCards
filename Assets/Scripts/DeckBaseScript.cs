@@ -17,6 +17,7 @@ public class DeckBaseScript : MonoBehaviour {
     private CardScript lastCardChoosed;
     private bool isOnInterval = true; // indica 'true' enquanto as cartas estiverem em modo de amostra
     private int wildcardId = -1;
+    private int presentationMode = 3; // modo de exibição das cartas vigente
     private int pairs = 0; // registro de pares formados
     private int score = 3; // o jogo começa com três vidas
     private int isDeckPeekActive = -1; // evita que a função de teste 'show' seja chamada duas vezes seguidas
@@ -135,9 +136,20 @@ public class DeckBaseScript : MonoBehaviour {
 
     IEnumerator ShowDeckMode(int mode, float after) {
         yield return new WaitForSeconds(after);
-        //StartCoroutine(ShowFullHouse(3));
-        //StartCoroutine(ShowFlush(.8f));
-        StartCoroutine(ShowThreeOfAKind(3));
+        switch (mode) {
+            case 0: // Show Full House
+                StartCoroutine(ShowFullHouse(3));
+                break;
+            case 1: // Show Flush
+                StartCoroutine(ShowFlush(.8f));
+                break;
+            case 2: // Show Three of a Kind
+                StartCoroutine(ShowThreeOfAKind(3));
+                break;
+            case 3:
+                StartCoroutine(ShowRandonFour(.8f));
+                break;
+        }
     }
 
     IEnumerator ShowFullHouse(float duration) {
@@ -149,6 +161,7 @@ public class DeckBaseScript : MonoBehaviour {
     }
 
     IEnumerator ShowFlush(float delay) {
+        // Mostra todas as cartas, porém uma de cada vez
         updateAlertTestCanvas(true, "Flush");
         foreach (CardScript card in deck) {
             card.flipCard(true);
@@ -172,6 +185,21 @@ public class DeckBaseScript : MonoBehaviour {
         // desvira cartas
         hideCards(false, true); // esconde cartas, desbloqueia tela
         yield return new WaitForSeconds(.4f);
+        updateAlertTestCanvas(false, "");
+    }
+
+    IEnumerator ShowRandonFour(float delay) {
+        // mostra quatro cartas selecionadas aleatoriamente
+        updateAlertTestCanvas(true, "Random 4");
+        CardScript card;
+        for (int i = 0; i < 4; i++) {
+            card = deck[UnityEngine.Random.Range(0, deck.Length)];
+            card.flipCard(true);
+            yield return new WaitForSeconds(delay + .4f);
+            card.flipCard(false);
+            yield return new WaitForSeconds(.4f);
+        }
+        Invoke("unlockClick", 0.2f); // desbloqueia tela para cliques
         updateAlertTestCanvas(false, "");
     }
 
@@ -258,7 +286,7 @@ public class DeckBaseScript : MonoBehaviour {
         List<int> cardList = new List<int>(NipesDuplicated);
         foreach (CardScript card in deck) {
             // randomiza posição das cartas pela última vez
-            int randomVal = UnityEngine.Random.Range(0, cardList.Count - 1);
+            int randomVal = UnityEngine.Random.Range(0, cardList.Count);
             int chooseCard = cardList[randomVal];
             card.setCard(chooseCard);
             cardList.RemoveAt(randomVal);
@@ -266,8 +294,17 @@ public class DeckBaseScript : MonoBehaviour {
             //Debug.Log("choose is " + ": " + chooseCard);
         }
         // após definidas, as cartas são mostradas em um dos 6 modos
-        StartCoroutine(ShowDeckMode(0, 2));
+        StartCoroutine(ShowDeckMode(presentationMode, 2));
     }
+
+    #region hud
+
+    public void onDropdownUpdate(Dropdown target) {
+        Debug.Log("Dropdown changed: " + target.value);
+        presentationMode = target.value;
+    }
+
+    #endregion
 
     #region elemental sorting functions
 
@@ -321,7 +358,7 @@ public class DeckBaseScript : MonoBehaviour {
 
     int[] obtainDuplicatedExceptOne(int[] entry) {
         int[] values = new int[(entry.Length*2)-1];
-        int wildcard = entry[UnityEngine.Random.Range(0, entry.Length-1)]; //escolhe um dos números da lista para ser o curinga
+        int wildcard = entry[UnityEngine.Random.Range(0, entry.Length)]; //escolhe um dos números da lista para ser o curinga
         for (int i = 0, z = 0; i < entry.Length; i++) { // duplica os valores que não forem o curinga
             values[z++] = entry[i];
             if (entry[i] == wildcard) continue;
