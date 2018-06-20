@@ -34,14 +34,8 @@ public class DeckBaseScript : MonoBehaviour {
     public void checkForPoint(CardScript card) {
         Debug.Log("Checking table for a point.");
         if (card.numberId == wildcardId) {
-            // caso o curinga seja selecionado, perde-se ponto
-            Debug.Log("You selected a forbidden card! Lost one point!");
-            score -= 1;
-            updateScore();
-            // carta é ocultada novamente após intervalo
-            lockClick();
-            StartCoroutine(HideCardsAndUnlockDelay(2f, card, lastCardChoosed));
-            return;
+            // caso o curinga seja selecionado em teste, recebe-se aviso
+            Debug.Log("You selected a forbidden card! Will lose point!");
         }
         if (lastCardChoosed == null) {
             // nenhuma carta selecionada anteriormente
