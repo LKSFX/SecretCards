@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System;
 
 public class DeckBaseScript : MonoBehaviour {
@@ -16,10 +17,12 @@ public class DeckBaseScript : MonoBehaviour {
     List<CardScript> unrevealedCards;
     private CardScript lastCardChoosed;
     private bool isOnInterval = true; // indica 'true' enquanto as cartas estiverem em modo de amostra
+    private bool isFirstTurn = true; // verdadeiro se for o primeiro turno jogado
     private int wildcardId = -1;
     private int presentationMode = 0; // modo de exibição das cartas vigente
     private int pairs = 0; // registro de pares formados
-    private int score = 3; // o jogo começa com três vidas
+    private int lives = 3; // o jogo começa com três vidas
+    private int score = 0;
     private int isDeckPeekActive = -1; // evita que a função de teste 'show' seja chamada duas vezes seguidas
 
     // Use this for initialization
@@ -28,8 +31,65 @@ public class DeckBaseScript : MonoBehaviour {
         deck = GetComponentsInChildren<CardScript>();
         foreach (CardScript card in deck)
             card.setDeck(this); // Para futuras chamadas, associa este deck à todas as cartas
-        sort();
+        gameBegin();
 	}
+
+    public void gameBegin() {
+        pairs = 0; // registro de pares é zerado
+        updateScore(); // reinicia placar
+        sort();
+        // após definidas, as cartas são mostradas em um dos 6 modos
+        int showMode = presentationMode-1; // quando o dropdown menu estiver na opção ZERO estaremos na -1
+        showMode = showMode == -1 ? obtainPresentationId() : showMode; // então o jogo se comportará normalmente
+        // para testes o showMode pode não respeitar a lógica
+        StartCoroutine(ShowDeckMode(showMode, 2));
+        isFirstTurn = false; // fim do primeiro TURNO
+    }
+
+    IEnumerator GameEnd() {
+        // vidas terminaram
+        lockClick();
+        updateScore();
+        updateAlertTestCanvas(true, "Game Over");
+        yield return new WaitForSeconds(1f);
+        hideCards(true, false);
+        yield return new WaitForSeconds(2f);
+        foreach (CardScript card in deck)
+            card.setDestroy();
+        yield return new WaitForSeconds(3f);
+        // reinicia cena
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    // obtém apresentação baseando-se no número de vidas
+    int obtainPresentationId() {
+        if (isFirstTurn || lives == 1) return 0; // apresentação flush com UMA vida ou primeiro turno jogado
+        // possibilidades a partir de DUAS vidas
+        List<int> possibilities = new List<int>();
+        possibilities.Add(0);
+        if (lives > 1) possibilities.Add(1);
+        if (lives > 2) {
+            // TRÊS vidas > 1, 2, 3
+            possibilities.Remove(0);
+            possibilities.Add(2);
+            possibilities.Add(3);
+        }
+        if (lives > 3) {
+            // QUATRO vidas > 2, 3
+            possibilities.Remove(1);
+        }
+        if (lives > 4) {
+            // CINCO vidas > 3, 4
+            possibilities.Remove(2);
+            possibilities.Add(4);
+        }
+        if (lives > 5) {
+            // SEIS vidas > 4, 5
+            possibilities.Remove(3);
+            possibilities.Add(5);
+        }
+        return possibilities[UnityEngine.Random.Range(0, possibilities.Count)];
+    }
 
     public void checkForPoint(CardScript card) {
         Debug.Log("Checking table for a point.");
@@ -53,7 +113,13 @@ public class DeckBaseScript : MonoBehaviour {
             } else {
                 // cartas não formam o par
                 Debug.Log("Incorrect pair. Lost one point!");
-                score -= 1; // perde-se um ponto
+                lives -= 1; // perde-se um ponto
+                if (lives < 1) {
+                    // GAME OVER 
+                    // jogador ficou sem vida
+                    StartCoroutine("GameEnd");
+                    return;
+                }
                 // cartas são ocultadas novamente após intervalo
                 lockClick();
                 StartCoroutine(HideCardsAndUnlockDelay(2f, card, lastCardChoosed));
@@ -73,13 +139,15 @@ public class DeckBaseScript : MonoBehaviour {
         lastCardChoosed = null;
         hideCards(true, false); // esconde todas as cartas
         lockClick();
-        Invoke("sort", 1);
+        Invoke("gameBegin", 1);
     }
 
     // usado para testes
     public void gameReset() {
         // quando o botão reset é clicado 
-        score = 3;
+        lives = 3;
+        score = 0; // reinicia contagem da pontuação
+        isFirstTurn = true; // reseta TURNO
         resetDeck();
     }
 
@@ -101,14 +169,17 @@ public class DeckBaseScript : MonoBehaviour {
         // atualiza score no canvas
         // chamar essa função sempre que haja mudança na pontuação
         if (pairs == 3) {
+            // VENCEU
             // aqui todos os pares foram formados
             // jogador vence e ganha uma vida, uma nova partida deverá iniciar
-            score += 1; // ganha um ponto ganho pela rodada
+            score += lives; // vidas remanescentes tornam-se pontos
+            lives += 1; // ganha um ponto ganho pela rodada
             lockClick();
             Invoke("resetDeck", 2);
-        }
-        if (testCanvas != null && testCanvas.activeInHierarchy) { // atualiza score no canvas de teste
             testCanvas.transform.Find("Scores/Points").GetComponent<Text>().text = score.ToString();
+        }
+        if (testCanvas != null && testCanvas.activeInHierarchy) { // atualiza VIDAS no canvas de teste
+            testCanvas.transform.Find("Scores/Lives").GetComponent<Text>().text = lives.ToString();
         }
     }
 
@@ -140,13 +211,13 @@ public class DeckBaseScript : MonoBehaviour {
             case 2: // Show Three of a Kind
                 StartCoroutine(ShowThreeOfAKind(3));
                 break;
-            case 3:
+            case 3: // Show Random 4
                 StartCoroutine(ShowRandonFour(.8f));
                 break;
-            case 4:
-                StartCoroutine(ShowJoker(1f));
+            case 4: // Show Joker
+                StartCoroutine(ShowJoker(1.5f));
                 break;
-            case 5:
+            case 5: // Show Bad Game
                 StartCoroutine(ShowBadGame());
                 break;
         }
@@ -197,7 +268,7 @@ public class DeckBaseScript : MonoBehaviour {
             card.flipCard(true);
             yield return new WaitForSeconds(delay + .4f);
             card.flipCard(false);
-            yield return new WaitForSeconds(.4f);
+            yield return new WaitForSeconds(.6f);
         }
         Invoke("unlockClick", 0.2f); // desbloqueia tela para cliques
         updateAlertTestCanvas(false, "");
@@ -300,8 +371,6 @@ public class DeckBaseScript : MonoBehaviour {
 
     // define e embaralha as cartas, esta função deve ser chamada ao iniciar a rodada.
     public void sort() {
-        pairs = 0; // registro de pares é zerado
-        updateScore(); // reinicia placar
         updateAlertTestCanvas(true, "Sorting...");
         // as cartas são definidas aleatóriamente aqui
         int[] Nipes = obtainNipes(4, 0, 10);
@@ -316,8 +385,7 @@ public class DeckBaseScript : MonoBehaviour {
             // ---------
             //Debug.Log("choose is " + ": " + chooseCard);
         }
-        // após definidas, as cartas são mostradas em um dos 6 modos
-        StartCoroutine(ShowDeckMode(presentationMode, 2));
+        // =============
     }
 
     #region hud

@@ -79,4 +79,8 @@ public class CardScript : MonoBehaviour {
         nameLabel.text = thisCardName;
         numberId = value; // para futuras checagens
     }
+
+    public void setDestroy() {
+        animator.SetTrigger("Destroy");
+    }
 }
