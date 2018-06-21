@@ -7,12 +7,16 @@ public class ClickManager : MonoBehaviour {
 
     public GameObject deckTable;
     public bool isClickLocked { get; private set; } // ao iniciar o level, virar a carta é proibido
+    int fingerId = -1;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
         isClickLocked = true;
-	}
-	
+#if !UNITY_EDITOR
+        fingerId = 0;
+#endif
+    }
+
     public void setClickLock(bool stat) {
         isClickLocked = stat;
     }
@@ -20,7 +24,7 @@ public class ClickManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         // checa por clique em carta, se permitido
-        if (!isClickLocked && !EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(0)) {
+        if (!isClickLocked && !EventSystem.current.IsPointerOverGameObject(fingerId) && Input.GetMouseButtonDown(0)) {
             //Debug.Log("CLICK DETECTED");
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);

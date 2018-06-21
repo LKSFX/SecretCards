@@ -1780,7 +1780,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 10.02
   m_Viewport: {fileID: 526558555}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 358578023}
@@ -2456,6 +2456,12 @@ MonoBehaviour:
     - m_Text: Flush
       m_Image: {fileID: 0}
     - m_Text: 3OfAKind
+      m_Image: {fileID: 0}
+    - m_Text: Random4
+      m_Image: {fileID: 0}
+    - m_Text: Joker
+      m_Image: {fileID: 0}
+    - m_Text: BadGame
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:

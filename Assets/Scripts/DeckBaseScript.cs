@@ -17,7 +17,7 @@ public class DeckBaseScript : MonoBehaviour {
     private CardScript lastCardChoosed;
     private bool isOnInterval = true; // indica 'true' enquanto as cartas estiverem em modo de amostra
     private int wildcardId = -1;
-    private int presentationMode = 3; // modo de exibição das cartas vigente
+    private int presentationMode = 0; // modo de exibição das cartas vigente
     private int pairs = 0; // registro de pares formados
     private int score = 3; // o jogo começa com três vidas
     private int isDeckPeekActive = -1; // evita que a função de teste 'show' seja chamada duas vezes seguidas
@@ -143,6 +143,12 @@ public class DeckBaseScript : MonoBehaviour {
             case 3:
                 StartCoroutine(ShowRandonFour(.8f));
                 break;
+            case 4:
+                StartCoroutine(ShowJoker(1f));
+                break;
+            case 5:
+                StartCoroutine(ShowBadGame());
+                break;
         }
     }
 
@@ -193,6 +199,29 @@ public class DeckBaseScript : MonoBehaviour {
             card.flipCard(false);
             yield return new WaitForSeconds(.4f);
         }
+        Invoke("unlockClick", 0.2f); // desbloqueia tela para cliques
+        updateAlertTestCanvas(false, "");
+    }
+
+    IEnumerator ShowJoker(float duration) {
+        // mostra apenas o curinga
+        updateAlertTestCanvas(true, "Joker");
+        foreach (CardScript card in deck) {
+            if (card.numberId == wildcardId) {
+                card.flipCard(true);
+                yield return new WaitForSeconds(duration + .4f);
+                card.flipCard(false);
+                yield return new WaitForSeconds(.4f);
+                break;
+            }
+        }
+        Invoke("unlockClick", 0.2f); // desbloqueia tela para cliques
+        updateAlertTestCanvas(false, "");
+    }
+
+    IEnumerator ShowBadGame() {
+        updateAlertTestCanvas(true, "Bad Game");
+        yield return new WaitForSeconds(2f);
         Invoke("unlockClick", 0.2f); // desbloqueia tela para cliques
         updateAlertTestCanvas(false, "");
     }
