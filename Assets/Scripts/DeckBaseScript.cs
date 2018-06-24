@@ -8,6 +8,7 @@ using System;
 public class DeckBaseScript : MonoBehaviour {
 
     public ClickManager clickManager;
+    public HudControl hud;
     public GameObject testCanvas;
     public GameObject sortingAlert;
     public bool isDebug = false;
@@ -114,6 +115,10 @@ public class DeckBaseScript : MonoBehaviour {
                 // cartas não formam o par
                 Debug.Log("Incorrect pair. Lost one point!");
                 lives -= 1; // perde-se um ponto
+                if (hud != null && hud.isActiveAndEnabled) {
+                    // se o HUD estiver presente
+                    hud.updateLives(lives);
+                }
                 if (lives < 1) {
                     // GAME OVER 
                     // jogador ficou sem vida
@@ -180,6 +185,10 @@ public class DeckBaseScript : MonoBehaviour {
         }
         if (testCanvas != null && testCanvas.activeInHierarchy) { // atualiza VIDAS no canvas de teste
             testCanvas.transform.Find("Scores/Lives").GetComponent<Text>().text = lives.ToString();
+        }
+        if (hud != null && hud.isActiveAndEnabled) {
+            // se o HUD estiver presente
+            hud.updateLives(lives);
         }
     }
 
