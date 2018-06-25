@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using System;
 
 public class DeckBaseScript : MonoBehaviour {
@@ -32,7 +31,9 @@ public class DeckBaseScript : MonoBehaviour {
         deck = GetComponentsInChildren<CardScript>();
         foreach (CardScript card in deck)
             card.setDeck(this); // Para futuras chamadas, associa este deck à todas as cartas
-        //gameBegin();
+        // Inicia o jogo imediatamente se o menu não estiver aberto
+        if (GameManager.Instance.isMenuClosed)
+            gameBegin();
 	}
 
     public void gameBegin() {
@@ -55,6 +56,7 @@ public class DeckBaseScript : MonoBehaviour {
         lives = 3;
         score = 0; // reinicia contagem da pontuação
         isFirstTurn = true; // reseta TURNO
+        updateAlertTestCanvas(true, "Restarting...");
         resetDeck();
     }
 
@@ -69,7 +71,6 @@ public class DeckBaseScript : MonoBehaviour {
         foreach (CardScript card in deck)
             card.setDestroy();
         yield return new WaitForSeconds(3f);
-        updateAlertTestCanvas(true, "Restarting...");
         // reinicia cartas
         foreach (CardScript card in deck)
             card.setResetCard();
