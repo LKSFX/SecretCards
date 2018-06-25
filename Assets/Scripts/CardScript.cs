@@ -10,6 +10,7 @@ public class CardScript : MonoBehaviour {
     Animator animator;
     DeckBaseScript deck; // referência ao deck
     public bool isFliped { get { return animator.GetBool("Flipped"); } } // descobre se esta carta está virada
+    public bool canMove { get; private set;  } // carta pode se mover? valor só pode ser definido internamente
     static string[] suitList = new string[] { "Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
         "Uranus", "Neptune", "Pluto", "Moon" };
     public int numberId { get; private set; }
@@ -49,6 +50,7 @@ public class CardScript : MonoBehaviour {
         if (animator.GetBool("Flipped") == stat)
             return; 
         animator.SetBool("Flipped", stat);
+        canMove = !stat; // não se move enquanto virada
         StartCoroutine(ShowInfoWithDelay(stat, valid, stat ? 0.45f : 0.1f));
     }
 
@@ -78,6 +80,10 @@ public class CardScript : MonoBehaviour {
         numberLabel.text = value.ToString();
         nameLabel.text = thisCardName;
         numberId = value; // para futuras checagens
+    }
+
+    public void setMoveLock(bool block) {
+        canMove = !block;
     }
 
     public void setDestroy() {

@@ -1388,8 +1388,8 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 577811351}
-  - component: {fileID: 577811352}
   - component: {fileID: 577811353}
+  - component: {fileID: 577811352}
   m_Layer: 0
   m_Name: Table
   m_TagString: Untagged
@@ -1445,6 +1445,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64ae67586828a2c48a31a835a5b28bdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  yy: 0
+  yl: 0.04
+  speed: 0.085
 --- !u!1 &580001547
 GameObject:
   m_ObjectHideFlags: 0
@@ -4877,10 +4880,10 @@ RectTransform:
   m_Father: {fileID: 199873102}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.00088500977}
-  m_SizeDelta: {x: 800, y: 1333.3}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1933890625
 MonoBehaviour:
@@ -4895,7 +4898,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -5320,7 +5323,6 @@ GameObject:
   - component: {fileID: 2141493454}
   - component: {fileID: 2141493457}
   - component: {fileID: 2141493456}
-  - component: {fileID: 2141493455}
   m_Layer: 0
   m_Name: Header
   m_TagString: Untagged
@@ -5344,25 +5346,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 529.5}
-  m_SizeDelta: {x: 0, y: -1059}
+  m_AnchoredPosition: {x: 0, y: 552.4}
+  m_SizeDelta: {x: 0, y: -1104.7}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2141493455
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2141493453}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1301386320, guid: f70555f144d8491a825f0804e09c671c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!114 &2141493456
 MonoBehaviour:
   m_ObjectHideFlags: 0

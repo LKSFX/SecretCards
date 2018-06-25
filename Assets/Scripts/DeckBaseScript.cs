@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 public class DeckBaseScript : MonoBehaviour {
 
@@ -56,6 +55,9 @@ public class DeckBaseScript : MonoBehaviour {
         lives = 3;
         score = 0; // reinicia contagem da pontuação
         isFirstTurn = true; // reseta TURNO
+        lastCardChoosed = null;
+        wildcardId = -1;
+        isDeckPeekActive = -1;
         updateAlertTestCanvas(true, "Restarting...");
         resetDeck();
     }
@@ -271,8 +273,12 @@ public class DeckBaseScript : MonoBehaviour {
         }
         yield return new WaitForSeconds(duration + .4f);
         // desvira cartas
-        hideCards(false, true); // esconde cartas, desbloqueia tela
+        foreach (CardScript card in parSelection) {
+            card.flipCard(false); // esconde cartas
+        }
         yield return new WaitForSeconds(.4f);
+        //desbloqueia tela
+        unlockClick();
         updateAlertTestCanvas(false, "");
     }
 
@@ -472,7 +478,7 @@ public class DeckBaseScript : MonoBehaviour {
             if (entry[i] == wildcard) continue;
             values[z++] = entry[i];
         }
-        if (isDebug) Debug.Log("NipeDuplicated " + String.Join("", new List<int>(values).ConvertAll(i => i.ToString()).ToArray()));
+        if (isDebug) Debug.Log("NipeDuplicated " + values.ToString());
         // salva o valor do curinga na variável 'wildcardId' para checagem durante o processo de checagem de escolhas
         wildcardId = wildcard;
         return values;
