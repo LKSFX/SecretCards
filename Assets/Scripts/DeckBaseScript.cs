@@ -189,6 +189,7 @@ public class DeckBaseScript : MonoBehaviour {
         if (hud != null && hud.isActiveAndEnabled) {
             // se o HUD estiver presente
             hud.updateLives(lives);
+            hud.updateScore(score);
         }
     }
 

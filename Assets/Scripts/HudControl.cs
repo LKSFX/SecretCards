@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HudControl : MonoBehaviour {
 
@@ -14,6 +15,7 @@ public class HudControl : MonoBehaviour {
 		
 	}
 
+    // define a porção da barra de vida a ser mostrada
     public void updateLives(int lives) {
         Transform bar = transform.Find("StatsNonStatic/Bar");
         Animator animator;
@@ -22,5 +24,10 @@ public class HudControl : MonoBehaviour {
             animator = bar.Find("Life" + i).GetComponent<Animator>();
             animator.SetBool("Active", i < lives);
         }
+    }
+
+    // define o SCORE a ser mostrado na barra
+    public void updateScore(int score) {
+        transform.Find("StatsStatic/Bar/ScoreLabel/Text").GetComponent<Text>().text = score.ToString();
     }
 }
