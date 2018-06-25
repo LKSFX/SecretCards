@@ -32,12 +32,12 @@ public class DeckBaseScript : MonoBehaviour {
         deck = GetComponentsInChildren<CardScript>();
         foreach (CardScript card in deck)
             card.setDeck(this); // Para futuras chamadas, associa este deck à todas as cartas
-        gameBegin();
+        //gameBegin();
 	}
 
     public void gameBegin() {
         pairs = 0; // registro de pares é zerado
-        updateScore(); // reinicia placar
+        updateScore(); // reinicia placares
         sort();
         // após definidas, as cartas são mostradas em um dos 6 modos
         int showMode = presentationMode-1; // quando o dropdown menu estiver na opção ZERO estaremos na -1
@@ -45,6 +45,17 @@ public class DeckBaseScript : MonoBehaviour {
         // para testes o showMode pode não respeitar a lógica
         StartCoroutine(ShowDeckMode(showMode, 2));
         isFirstTurn = false; // fim do primeiro TURNO
+    }
+
+    /// <summary>
+    /// Usado para testes. Esta função já chama gameBegin 
+    /// </summary>
+    public void gameReset() {
+        // quando o botão reset é clicado 
+        lives = 3;
+        score = 0; // reinicia contagem da pontuação
+        isFirstTurn = true; // reseta TURNO
+        resetDeck();
     }
 
     IEnumerator GameEnd() {
@@ -58,8 +69,12 @@ public class DeckBaseScript : MonoBehaviour {
         foreach (CardScript card in deck)
             card.setDestroy();
         yield return new WaitForSeconds(3f);
-        // reinicia cena
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        updateAlertTestCanvas(true, "Restarting...");
+        // reinicia cartas
+        foreach (CardScript card in deck)
+            card.setResetCard();
+        // reinicia variáveis e inicia jogo
+        gameReset();
     }
 
     // obtém apresentação baseando-se no número de vidas
@@ -145,15 +160,6 @@ public class DeckBaseScript : MonoBehaviour {
         hideCards(true, false); // esconde todas as cartas
         lockClick();
         Invoke("gameBegin", 1);
-    }
-
-    // usado para testes
-    public void gameReset() {
-        // quando o botão reset é clicado 
-        lives = 3;
-        score = 0; // reinicia contagem da pontuação
-        isFirstTurn = true; // reseta TURNO
-        resetDeck();
     }
 
     public void lockClick() {

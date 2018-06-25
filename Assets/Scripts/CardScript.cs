@@ -83,4 +83,9 @@ public class CardScript : MonoBehaviour {
     public void setDestroy() {
         animator.SetTrigger("Destroy");
     }
+
+    public void setResetCard() {
+        // retorna a carta ao estado inicial: virada para baixo
+        animator.SetTrigger("Reset"); 
+    }
 }
