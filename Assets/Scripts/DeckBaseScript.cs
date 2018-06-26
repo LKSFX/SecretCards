@@ -31,8 +31,12 @@ public class DeckBaseScript : MonoBehaviour {
         foreach (CardScript card in deck)
             card.setDeck(this); // Para futuras chamadas, associa este deck à todas as cartas
         // Inicia o jogo imediatamente se o menu não estiver aberto
-        if (GameManager.Instance.isMenuClosed)
+        if (GameManager.Instance.IsMenuPresent) {
             gameBegin();
+        } else { // manda referência para o main menu controlar este deck
+            GameManager.Instance.MainMenu.setDeck(this);
+            GameObject.Find("Background").SetActive(false); // desativa o background presente no MENU
+        }
 	}
 
     public void gameBegin() {
@@ -188,6 +192,8 @@ public class DeckBaseScript : MonoBehaviour {
             // jogador vence e ganha uma vida, uma nova partida deverá iniciar
             score += lives; // vidas remanescentes tornam-se pontos
             lives += 1; // ganha um ponto ganho pela rodada
+            updateAlertTestCanvas(true, "You Win");
+            showCards(); // revela a carta curinga 
             lockClick();
             Invoke("resetDeck", 2);
             testCanvas.transform.Find("Scores/Points").GetComponent<Text>().text = score.ToString();
