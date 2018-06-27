@@ -5,12 +5,10 @@ using UnityEngine.SceneManagement;
 
 public class MenuControl : MonoBehaviour {
 
-    Camera menuCam;
     DeckBaseScript deck;
 
     // Use this for initialization
     void Start() {
-        menuCam = transform.Find("MenuCam").GetComponent<Camera>();
         GameManager.Instance.setMenuControl(this);
         SceneManager.sceneLoaded += OnSceneLoaded;
         GameManager.Instance.IsMenuPresent = false;

@@ -40,6 +40,7 @@ public class DeckBaseScript : MonoBehaviour {
 	}
 
     public void gameBegin() {
+        CardScript.resetValidFlippedCardCount(); // Zera lista de cartas viradas
         pairs = 0; // registro de pares é zerado
         updateScore(); // reinicia placares
         sort();
@@ -132,6 +133,10 @@ public class DeckBaseScript : MonoBehaviour {
                 // cartas compõem o par
                 Debug.Log("Correct pair. Point!");
                 pairs += 1; // o par é registrado
+                CardScript.resetValidFlippedCardCount(); // ZERA lista de cartas viradas válidas
+                // gera efeito de match em ambas as cartas assinalando PAR completo
+                lastCardChoosed.setMatch();
+                card.setMatch();
                 lastCardChoosed = null; // desassocia última escolha
             } else {
                 // cartas não formam o par
@@ -153,6 +158,10 @@ public class DeckBaseScript : MonoBehaviour {
             }
             updateScore();
         }
+    }
+
+    public bool isACardWaitingToBeMatched() {
+        return lastCardChoosed != null;
     }
 
 	// Update is called once per frame
@@ -219,7 +228,7 @@ public class DeckBaseScript : MonoBehaviour {
     IEnumerator HideCardsAndUnlockDelay(float delay, params CardScript[] cards) {
         yield return new WaitForSeconds(delay);
         foreach (CardScript c in cards)
-            if (c != null) c.flipCard(false);
+            if (c != null) c.flipCard(false, true);
         Invoke("unlockClick", 0.5f);
         lastCardChoosed = null; // não é mais necessária essa referência
     }

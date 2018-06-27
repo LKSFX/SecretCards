@@ -14,6 +14,7 @@ public class CardScript : MonoBehaviour {
     static string[] suitList = new string[] { "Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
         "Uranus", "Neptune", "Pluto", "Moon" };
     public int numberId { get; private set; }
+    public static int validCardsFlipped { get; private set; }
 
     // Isto ocorre antes do Start
     void Awake () {
@@ -52,6 +53,9 @@ public class CardScript : MonoBehaviour {
         animator.SetBool("Flipped", stat);
         canMove = !stat; // não se move enquanto virada
         StartCoroutine(ShowInfoWithDelay(stat, valid, stat ? 0.45f : 0.1f));
+        if (valid) {// assinala que existe uma carta virada esperando por par na próxima jogada
+            validCardsFlipped += stat ? 1 : -1;
+        }
     }
 
     IEnumerator ShowInfoWithDelay(bool show, bool valid, float delay) {
@@ -86,6 +90,10 @@ public class CardScript : MonoBehaviour {
         canMove = !block;
     }
 
+    public void setMatch() {
+        animator.SetTrigger("Matched");
+    }
+
     public void setDestroy() {
         animator.SetTrigger("Destroy");
     }
@@ -94,4 +102,9 @@ public class CardScript : MonoBehaviour {
         // retorna a carta ao estado inicial: virada para baixo
         animator.SetTrigger("Reset"); 
     }
+
+    public static void resetValidFlippedCardCount() {
+        validCardsFlipped = 0;
+    }
+
 }
