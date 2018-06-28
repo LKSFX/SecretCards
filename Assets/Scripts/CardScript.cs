@@ -55,6 +55,7 @@ public class CardScript : MonoBehaviour {
         StartCoroutine(ShowInfoWithDelay(stat, valid, stat ? 0.45f : 0.1f));
         if (valid) {// assinala que existe uma carta virada esperando por par na próxima jogada
             validCardsFlipped += stat ? 1 : -1;
+            if (stat) setTriggerHit(); // aplica efeito de hit a esta carta
         }
     }
 
@@ -90,11 +91,15 @@ public class CardScript : MonoBehaviour {
         canMove = !block;
     }
 
-    public void setMatch() {
+    public void setTriggerHit() {
+        animator.SetTrigger("Hit");
+    }
+
+    public void setTriggerMatch() {
         animator.SetTrigger("Matched");
     }
 
-    public void setDestroy() {
+    public void setTriggerDestroy() {
         animator.SetTrigger("Destroy");
     }
 

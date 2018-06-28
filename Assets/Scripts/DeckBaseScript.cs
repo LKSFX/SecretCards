@@ -76,7 +76,7 @@ public class DeckBaseScript : MonoBehaviour {
         hideCards(true, false);
         yield return new WaitForSeconds(2f);
         foreach (CardScript card in deck)
-            card.setDestroy();
+            card.setTriggerDestroy();
         yield return new WaitForSeconds(3f);
         // reinicia cartas
         foreach (CardScript card in deck)
@@ -135,8 +135,8 @@ public class DeckBaseScript : MonoBehaviour {
                 pairs += 1; // o par é registrado
                 CardScript.resetValidFlippedCardCount(); // ZERA lista de cartas viradas válidas
                 // gera efeito de match em ambas as cartas assinalando PAR completo
-                lastCardChoosed.setMatch();
-                card.setMatch();
+                lastCardChoosed.setTriggerMatch();
+                card.setTriggerMatch();
                 lastCardChoosed = null; // desassocia última escolha
             } else {
                 // cartas não formam o par
