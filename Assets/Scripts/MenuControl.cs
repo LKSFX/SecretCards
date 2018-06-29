@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class MenuControl : MonoBehaviour {
 
@@ -12,6 +13,7 @@ public class MenuControl : MonoBehaviour {
         GameManager.Instance.setMenuControl(this);
         SceneManager.sceneLoaded += OnSceneLoaded;
         GameManager.Instance.IsMenuPresent = false;
+        updateHighscoreIcon();
     }
 
     // Update is called once per frame
@@ -29,6 +31,8 @@ public class MenuControl : MonoBehaviour {
     void hideMenuAndStartGame() {
         StartCoroutine(Fade(2));
     }
+
+    void showMenuAndEndGame() { } // função deverá ser construída
 
     IEnumerator Fade(float fadeDuration) {
         CanvasGroup group = GetComponent<CanvasGroup>();
@@ -53,5 +57,11 @@ public class MenuControl : MonoBehaviour {
 
     public void setDeck(DeckBaseScript deckController) {
         deck = deckController;
+    }
+
+    public void updateHighscoreIcon() {
+        // precisa ser corretamente implementado
+        //TODO
+        transform.Find("Buttons/Scores/Counter").GetComponent<Text>().text = "<b>" + PlayerPrefs.GetInt(GameManager.Instance.HighscoreIndex, 0) + "</b>";
     }
 }
