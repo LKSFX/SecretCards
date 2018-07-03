@@ -91,24 +91,27 @@ public class DeckBaseScript : MonoBehaviour {
         // possibilidades a partir de DUAS vidas
         List<int> possibilities = new List<int>();
         possibilities.Add(0);
-        if (lives > 1) possibilities.Add(1);
-        if (lives > 2) {
-            // TRÊS vidas > 1, 2, 3
-            possibilities.Remove(0);
+        if (lives > 1) {
+            // DUAS vidas > ALL, FLUSH, 3OFAKIND
+            possibilities.Add(1); 
             possibilities.Add(2);
+        }
+        if (lives > 2) {
+            // TRÊS vidas > FLUSH, 3OFAKIND, RANDOM4
+            possibilities.Remove(0);
             possibilities.Add(3);
         }
         if (lives > 3) {
-            // QUATRO vidas > 2, 3
+            // QUATRO vidas > 3OFAKIND, RANDOM4, JOKER
             possibilities.Remove(1);
-        }
-        if (lives > 4) {
-            // CINCO vidas > 3, 4
-            possibilities.Remove(2);
             possibilities.Add(4);
         }
+        if (lives > 4) {
+            // CINCO vidas > RANDOM4, JOKER
+            possibilities.Remove(2);
+        }
         if (lives > 5) {
-            // SEIS vidas > 4, 5
+            // SEIS vidas > JOKER, BADGAME
             possibilities.Remove(3);
             possibilities.Add(5);
         }
@@ -233,6 +236,7 @@ public class DeckBaseScript : MonoBehaviour {
         updateAlertTestCanvas(true, "Turnaround Chance!");
         updateScore();
         CardScript chooseCard = deck[Random.Range(0, deck.Length)];
+        yield return new WaitForSeconds(.5f); // dá tempo às cartas anteriores serem viradas de volta 
         chooseCard.flipCard(true, false);
         yield return new WaitForSeconds(2);
         chooseCard.flipCard(false, false);
