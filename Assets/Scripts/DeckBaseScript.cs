@@ -114,7 +114,8 @@ public class DeckBaseScript : MonoBehaviour {
         }
         return possibilities[UnityEngine.Random.Range(0, possibilities.Count)];
     }
-
+    
+    // Verifica se a jogada converteu ponto
     public void checkForPoint(CardScript card) {
         Debug.Log("Checking table for a point.");
         if (card.numberId == wildcardId) {
@@ -146,6 +147,7 @@ public class DeckBaseScript : MonoBehaviour {
                     // se o HUD estiver presente
                     hud.updateLives(lives);
                 }
+                
                 if (lives < 1) {
                     // GAME OVER 
                     // jogador ficou sem vida
@@ -226,12 +228,32 @@ public class DeckBaseScript : MonoBehaviour {
         }
     }
 
+    // chance de REVIRAVOLTA
+    IEnumerator TurnaroundChance() {
+        updateAlertTestCanvas(true, "Turnaround Chance!");
+        updateScore();
+        CardScript chooseCard = deck[Random.Range(0, deck.Length)];
+        chooseCard.flipCard(true, false);
+        yield return new WaitForSeconds(2);
+        chooseCard.flipCard(false, false);
+        yield return new WaitForSeconds(.4f);
+        updateAlertTestCanvas(false, "");
+        unlockClick();
+    }
+
     IEnumerator HideCardsAndUnlockDelay(float delay, params CardScript[] cards) {
         yield return new WaitForSeconds(delay);
         foreach (CardScript c in cards)
             if (c != null) c.flipCard(false, true);
-        Invoke("unlockClick", 0.5f);
         lastCardChoosed = null; // não é mais necessária essa referência
+        // chance de REVIRAVOLTA se haver UMA vida e ZERO pares formados
+        if (lives == 1 && pairs == 0) {
+            // com apenas uma vida restante
+            StartCoroutine("TurnaroundChance");
+        }
+        else {
+            Invoke("unlockClick", 0.5f);
+        }
     }
 
     IEnumerator ShowDeckMode(int mode, float after) {
