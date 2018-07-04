@@ -50,6 +50,18 @@ public class HudControl : MonoBehaviour {
         }
     }
 
+    // Os elementos TITLE e BARRA DE VIDA volta às suas respectivas posições
+    public void resetDefaultPosition() {
+        // Posiciona Barra de vida
+        RectTransform rect = (RectTransform)transform.Find("StatsStatic/Bar");
+        rect.offsetMin = new Vector2(rect.offsetMin.x, 0); // define âncora BOTTOM
+        rect = (RectTransform)transform.Find("StatsNonStatic/Bar");
+        rect.offsetMin = new Vector2(rect.offsetMin.x, 0); // define âncora BOTTOM
+        // Posiciona Cabeçalho
+        rect = (RectTransform)transform.Find("StatsStatic/Header");
+        rect.offsetMax = new Vector2(rect.offsetMax.x, 0); // define âncora TOP
+    }
+
     private void OnDestroy() {
         // Salva o highscore ao sair ou fechar a cena ou jogo
         saveHighscore();

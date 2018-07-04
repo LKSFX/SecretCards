@@ -6,7 +6,7 @@ public class GameManager : Singleton<GameManager> {
 
     protected GameManager() { }
 
-    public bool IsMenuPresent = true;
+    public bool IsMenuPresent = false;
     public readonly string HighscoreIndex = "PlayerHighscore0";
     public MenuControl MainMenu { get; private set; }
 

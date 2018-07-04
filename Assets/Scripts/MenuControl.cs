@@ -12,7 +12,7 @@ public class MenuControl : MonoBehaviour {
     void Start() {
         GameManager.Instance.setMenuControl(this);
         SceneManager.sceneLoaded += OnSceneLoaded;
-        GameManager.Instance.IsMenuPresent = false;
+        GameManager.Instance.IsMenuPresent = true;
         updateHighscoreIcon();
     }
 
@@ -44,14 +44,20 @@ public class MenuControl : MonoBehaviour {
             group.alpha = alpha;
             yield return null;
         }
-        deck.gameBegin(); // inicia jogo
+        
         alpha = 0;
+    }
+
+    IEnumerator GameBegin() {
+        yield return new WaitForEndOfFrame();
+        deck.gameBegin(); // inicia jogo
+        hideMenuAndStartGame();
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
         // quando a cena carregar
         if (scene.name == "GameScene") {
-            hideMenuAndStartGame();
+            StartCoroutine("GameBegin");
         }
     }
 

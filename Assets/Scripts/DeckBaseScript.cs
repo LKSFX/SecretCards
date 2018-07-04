@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Playables;
 
 public class DeckBaseScript : MonoBehaviour {
 
@@ -9,12 +10,15 @@ public class DeckBaseScript : MonoBehaviour {
     public HudControl hud;
     public GameObject testCanvas;
     public GameObject sortingAlert;
+    public PlayableDirector gameIntroDirector;
     public bool isDebug = false;
     public bool isTestCanvasOn = false;
+    public bool isGamePresentationOn = false;
     public bool isClickLocked { get { return clickManager.isClickLocked; } set { } }
     CardScript[] deck;
     List<CardScript> unrevealedCards;
     private CardScript lastCardChoosed;
+    private bool isPresentationCompleted;
     private bool isOnInterval = true; // indica 'true' enquanto as cartas estiverem em modo de amostra
     private bool isFirstTurn = true; // verdadeiro se for o primeiro turno jogado
     private int wildcardId = -1;
@@ -31,25 +35,46 @@ public class DeckBaseScript : MonoBehaviour {
         foreach (CardScript card in deck)
             card.setDeck(this); // Para futuras chamadas, associa este deck à todas as cartas
         // Inicia o jogo imediatamente se o menu não estiver aberto
-        if (GameManager.Instance.IsMenuPresent) {
+        if (!GameManager.Instance.IsMenuPresent) {
             gameBegin();
         } else { // manda referência para o main menu controlar este deck
             GameManager.Instance.MainMenu.setDeck(this);
             GameObject.Find("Background").SetActive(false); // desativa o background presente no MENU
+            updateAlertTestCanvas(false, "");
+            transform.position = new Vector3(1000, 0, 0);
+            StartCoroutine("ResetPosition");
         }
 	}
+
+    // Gambiarra para impedir o aparecimento das cartas antes da animação introdutória no MENU PRINCIPAL
+    IEnumerator ResetPosition() {
+        yield return new WaitForEndOfFrame();
+        transform.position = Vector3.zero;
+    }
 
     public void gameBegin() {
         CardScript.resetValidFlippedCardCount(); // Zera lista de cartas viradas
         pairs = 0; // registro de pares é zerado
-        updateScore(); // reinicia placares
         sort();
+        updateAlertTestCanvas(false, "");
+        if (isFirstTurn && presentationMode-1 < 0 && (isGamePresentationOn || GameManager.Instance.IsMenuPresent)) {
+            gameIntroDirector.time = 0;
+            if (gameIntroDirector.state != PlayState.Playing) gameIntroDirector.Play();
+        }
+        else {
+            hud.resetDefaultPosition();
+            updateScore(); // reinicia placares
+            gameStart();
+        }
+    }
+
+    public void gameStart() {
         // após definidas, as cartas são mostradas em um dos 6 modos
-        int showMode = presentationMode-1; // quando o dropdown menu estiver na opção ZERO estaremos na -1
+        int showMode = presentationMode - 1; // quando o dropdown menu estiver na opção ZERO estaremos na -1
         showMode = showMode == -1 ? obtainPresentationId() : showMode; // então o jogo se comportará normalmente
         // para testes o showMode pode não respeitar a lógica
-        StartCoroutine(ShowDeckMode(showMode, 2));
-        isFirstTurn = false; // fim do primeiro TURNO
+        StartCoroutine(ShowDeckMode(showMode, .1f));
+        isFirstTurn = false; // a partir daqui não será mais o PRIMEIRO TURNO
     }
 
     /// <summary>
@@ -264,24 +289,25 @@ public class DeckBaseScript : MonoBehaviour {
         yield return new WaitForSeconds(after);
         switch (mode) {
             case 0: // Show Full House
-                StartCoroutine(ShowFullHouse(3));
+                yield return StartCoroutine(ShowFullHouse(3));
                 break;
             case 1: // Show Flush
-                StartCoroutine(ShowFlush(.8f));
+                yield return StartCoroutine(ShowFlush(.8f));
                 break;
             case 2: // Show Three of a Kind
-                StartCoroutine(ShowThreeOfAKind(3));
+                yield return StartCoroutine(ShowThreeOfAKind(3));
                 break;
             case 3: // Show Random 4
-                StartCoroutine(ShowRandonFour(.8f));
+                yield return StartCoroutine(ShowRandonFour(.8f));
                 break;
             case 4: // Show Joker
-                StartCoroutine(ShowJoker(1.5f));
+                yield return StartCoroutine(ShowJoker(1.5f));
                 break;
             case 5: // Show Bad Game
-                StartCoroutine(ShowBadGame());
+                yield return StartCoroutine(ShowBadGame());
                 break;
         }
+        updateScore();
     }
 
     IEnumerator ShowFullHouse(float duration) {
