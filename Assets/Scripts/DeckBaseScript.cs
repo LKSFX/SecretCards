@@ -57,6 +57,7 @@ public class DeckBaseScript : MonoBehaviour {
         pairs = 0; // registro de pares é zerado
         sort();
         updateAlertTestCanvas(false, "");
+        transform.position = Vector3.zero; // certifica que o DECK esteja na posição visível à câmera
         if (isFirstTurn && presentationMode-1 < 0 && (isGamePresentationOn || GameManager.Instance.IsMenuPresent)) {
             gameIntroDirector.time = 0;
             if (gameIntroDirector.state != PlayState.Playing) gameIntroDirector.Play();
@@ -81,6 +82,10 @@ public class DeckBaseScript : MonoBehaviour {
     /// Usado para testes. Esta função já chama gameBegin 
     /// </summary>
     public void gameReset() {
+        gameReset(true);
+    }
+
+    public void gameReset(bool beginAfter) {
         // quando o botão reset é clicado 
         lives = 3;
         score = 0; // reinicia contagem da pontuação
@@ -88,8 +93,12 @@ public class DeckBaseScript : MonoBehaviour {
         lastCardChoosed = null;
         wildcardId = -1;
         isDeckPeekActive = -1;
-        updateAlertTestCanvas(true, "Restarting...");
-        resetDeck();
+        updateAlertTestCanvas(beginAfter, "Restarting...");
+        resetDeck(beginAfter);
+    } 
+
+    public void gameEnd() {
+        StartCoroutine(GameEnd());
     }
 
     IEnumerator GameEnd() {
@@ -106,8 +115,17 @@ public class DeckBaseScript : MonoBehaviour {
         // reinicia cartas
         foreach (CardScript card in deck)
             card.setResetCard();
-        // reinicia variáveis e inicia jogo
-        gameReset();
+        if (GameManager.Instance.IsMenuPresent) {
+            // quando o MENU estiver presente
+            GameManager.Instance.MainMenu.showMenu();
+            gameIntroDirector.Stop();
+            hud.setHidePosition(); // esconde barra de vida e header
+            transform.position = new Vector3(1000, 0, 0); // esconde cartas
+            gameReset(false);
+        } else {
+            // reinicia variáveis e inicia jogo
+            gameReset();
+        }
     }
 
     // obtém apresentação baseando-se no número de vidas
@@ -196,16 +214,21 @@ public class DeckBaseScript : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		
+        
 	}
 
     // esta função, que chamará o inicio de uma nova, deve ser invocada no termino da rodada
     public void resetDeck() {
+        resetDeck(true);
+    }
+
+    public void resetDeck(bool beginAfter) {
         // chamar esse método ao fim da rodada
         lastCardChoosed = null;
         hideCards(true, false); // esconde todas as cartas
         lockClick();
-        Invoke("gameBegin", 1);
+        if (beginAfter)
+            Invoke("gameBegin", 1);
     }
 
     public void lockClick() {

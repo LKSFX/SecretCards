@@ -62,6 +62,19 @@ public class HudControl : MonoBehaviour {
         rect.offsetMax = new Vector2(rect.offsetMax.x, 0); // define âncora TOP
     }
 
+    // define posições não visíveis aos elementos
+    public void setHidePosition() {
+        Debug.Log("HidePositionHud");
+        // Posiciona Barra de vida
+        RectTransform rect = (RectTransform)transform.Find("StatsStatic/Bar");
+        rect.offsetMin = new Vector2(rect.offsetMin.x, -1045); // define âncora BOTTOM
+        rect = (RectTransform)transform.Find("StatsNonStatic/Bar");
+        rect.offsetMin = new Vector2(rect.offsetMin.x, -1045); // define âncora BOTTOM
+        // Posiciona Cabeçalho
+        rect = (RectTransform)transform.Find("StatsStatic/Header");
+        rect.offsetMax = new Vector2(rect.offsetMax.x, 1045); // define âncora TOP
+    }
+
     private void OnDestroy() {
         // Salva o highscore ao sair ou fechar a cena ou jogo
         saveHighscore();

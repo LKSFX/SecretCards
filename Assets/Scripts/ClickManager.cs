@@ -51,6 +51,10 @@ public class ClickManager : MonoBehaviour {
                 deckTable.GetComponent<DeckBaseScript>().peekCards(true);
             }
         }
+        else if (Input.GetKeyDown(KeyCode.P)) {
+            // atalho para terminar o jogo precocemente 
+            deckTable.GetComponent<DeckBaseScript>().gameEnd();
+        }
 	}
 
     
