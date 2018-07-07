@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class MenuControl : MonoBehaviour {
 
+    public Transform configMenu;
     DeckBaseScript deck;
     Scene sceneGame;
 
@@ -13,13 +14,17 @@ public class MenuControl : MonoBehaviour {
     void Start() {
         GameManager.Instance.setMenuControl(this);
         SceneManager.sceneLoaded += OnSceneLoaded;
-        GameManager.Instance.IsMenuPresent = true;
         updateHighscoreIcon();
     }
 
     // Update is called once per frame
     void Update() {
-        
+        if (Input.GetKeyDown(KeyCode.K)) {
+            GameManager.Instance.IsMusicOn = !GameManager.Instance.IsMusicOn;
+        }
+        if (Input.GetKeyDown(KeyCode.J)) {
+            GameManager.Instance.IsSoundOn = !GameManager.Instance.IsSoundOn;
+        }
     }
 
     public void onPlayGame() {
@@ -32,12 +37,35 @@ public class MenuControl : MonoBehaviour {
         Debug.Log("Clicked on play!");
     }
 
+    public void onOpenConfigMenu() {
+        if (configMenu != null) {
+            configMenu.gameObject.SetActive(true);
+            GetComponent<CanvasGroup>().blocksRaycasts = false;
+        }
+    }
+
+    public void onCloseConfigMenu() {
+        Debug.Log("Config. Window close call!");
+        if (configMenu != null) {
+            configMenu.gameObject.SetActive(false);
+            GetComponent<CanvasGroup>().blocksRaycasts = true;
+        }
+    }
+
     void hideMenuAndStartGame() {
         StartCoroutine(FadeOut(2));
+        // ativa o canvas de teste
+        foreach (GameObject go in sceneGame.GetRootGameObjects())
+            if (go.name == "TestCanvas1") 
+                go.SetActive(true);
     }
     
     public void showMenu() {
         StartCoroutine(FadeIn(1));
+        // desativa o canvas de teste
+        foreach (GameObject go in sceneGame.GetRootGameObjects())
+            if (go.name == "TestCanvas1")
+                go.SetActive(false);
     }
 
     void showMenuAndEndGame() { } // função deverá ser construída
@@ -80,7 +108,7 @@ public class MenuControl : MonoBehaviour {
         // quando a cena carregar
         if (scene.name == "GameScene") {
             sceneGame = scene;
-            StartCoroutine("GameBegin");
+            StartCoroutine(GameBegin());
         }
         Debug.Log("GameScene Loaded!");
     }
@@ -89,9 +117,23 @@ public class MenuControl : MonoBehaviour {
         deck = deckController;
     }
 
+    // configurações 
+
+    public void setMusic(bool on) {
+        GameManager.Instance.IsMusicOn = on;
+    }
+
+    public void setSound(bool on) {
+        GameManager.Instance.IsSoundOn = on;
+    }
+
     public void updateHighscoreIcon() {
         // precisa ser corretamente implementado
         //TODO
         transform.Find("Buttons/Scores/Counter").GetComponent<Text>().text = "<b>" + PlayerPrefs.GetInt(GameManager.Instance.HighscoreIndex, 0) + "</b>";
+    }
+
+    public T getComponentInConfigWindow<T>(string path) where T : Component {
+        return configMenu.Find(path).GetComponent<T>();
     }
 }

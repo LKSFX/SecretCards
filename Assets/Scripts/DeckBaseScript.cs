@@ -121,6 +121,7 @@ public class DeckBaseScript : MonoBehaviour {
             gameIntroDirector.Stop();
             hud.setHidePosition(); // esconde barra de vida e header
             transform.position = new Vector3(1000, 0, 0); // esconde cartas
+
             gameReset(false);
         } else {
             // reinicia variáveis e inicia jogo
@@ -378,7 +379,7 @@ public class DeckBaseScript : MonoBehaviour {
         updateAlertTestCanvas(true, "Random 4");
         CardScript card;
         for (int i = 0; i < 4; i++) {
-            card = deck[UnityEngine.Random.Range(0, deck.Length)];
+            card = deck[Random.Range(0, deck.Length)];
             card.flipCard(true);
             yield return new WaitForSeconds(delay + .4f);
             card.flipCard(false);
