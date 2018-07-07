@@ -13,10 +13,30 @@ public class GameManager : Singleton<GameManager> {
     public readonly string HighscoreIndex = "PlayerHighscore0";
     public MenuControl MainMenu { get; private set; }
 
+    private float escTime;
+    private float escWait = .5f;
+    private int exitAsks;
+
 	// Use this for initialization
 	void Awake () {
 		
 	}
+
+    void Update() {
+        // QUIT: verifica clique sobre botão return 
+        escTime += Time.deltaTime;
+        if (exitAsks > 0 && escTime > escWait)
+            exitAsks = 0; // tempo transpassado, zera pedido
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            exitAsks++;
+            if (exitAsks > 1 && escTime < escWait) {
+                exitAsks = 0; // DOIS cliques sobre ESCAPE/RETURN, jogo fecha
+                Application.Quit();
+                Debug.Log("application quitting");
+            }
+            escTime = 0;
+        }
+    }
 
     public void setMenuControl(MenuControl controller) {
         MainMenu = controller;

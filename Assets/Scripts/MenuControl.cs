@@ -70,33 +70,6 @@ public class MenuControl : MonoBehaviour {
 
     void showMenuAndEndGame() { } // função deverá ser construída
 
-    IEnumerator FadeOut(float fadeDuration) {
-        CanvasGroup group = GetComponent<CanvasGroup>();
-        float alpha = group.alpha; // opacidade
-        float time = 0;
-        while (alpha > 0) {
-            time += Time.deltaTime;
-            alpha = 1 - (1 * (time/fadeDuration));
-            group.alpha = alpha;
-            yield return null;
-        }
-        alpha = 0;
-    }
-
-    IEnumerator FadeIn(float fadeDuration) {
-        CanvasGroup group = GetComponent<CanvasGroup>();
-        float alpha = group.alpha; // opacidade
-        float time = 0;
-        while (alpha < 1) {
-            time += Time.deltaTime;
-            alpha = (1 * (time / fadeDuration));
-            group.alpha = alpha;
-            yield return null;
-        }
-        alpha = 1;
-        GetComponent<CanvasGroup>().blocksRaycasts = true; // detecta cliques no menu após FADEIN
-    }
-
     IEnumerator GameBegin() {
         GetComponent<CanvasGroup>().blocksRaycasts = false; // não detectar mais cliques
         yield return new WaitForEndOfFrame();
@@ -135,5 +108,32 @@ public class MenuControl : MonoBehaviour {
 
     public T getComponentInConfigWindow<T>(string path) where T : Component {
         return configMenu.Find(path).GetComponent<T>();
+    }
+
+    IEnumerator FadeOut(float fadeDuration) {
+        CanvasGroup group = GetComponent<CanvasGroup>();
+        float alpha = group.alpha; // opacidade
+        float time = 0;
+        while (alpha > 0) {
+            time += Time.deltaTime;
+            alpha = 1 - (1 * (time / fadeDuration));
+            group.alpha = alpha;
+            yield return null;
+        }
+        alpha = 0;
+    }
+
+    IEnumerator FadeIn(float fadeDuration) {
+        CanvasGroup group = GetComponent<CanvasGroup>();
+        float alpha = group.alpha; // opacidade
+        float time = 0;
+        while (alpha < 1) {
+            time += Time.deltaTime;
+            alpha = (1 * (time / fadeDuration));
+            group.alpha = alpha;
+            yield return null;
+        }
+        alpha = 1;
+        GetComponent<CanvasGroup>().blocksRaycasts = true; // detecta cliques no menu após FADEIN
     }
 }
