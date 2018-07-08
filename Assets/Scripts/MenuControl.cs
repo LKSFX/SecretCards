@@ -9,6 +9,9 @@ public class MenuControl : MonoBehaviour {
     public Transform configMenu;
     DeckBaseScript deck;
     Scene sceneGame;
+    private float windowHidePos = 1500f;
+    private float windowAlphaMeta = .5f;
+    private int windowDropSpeed = 1500;
 
     // Use this for initialization
     void Start() {
@@ -38,18 +41,11 @@ public class MenuControl : MonoBehaviour {
     }
 
     public void onOpenConfigMenu() {
-        if (configMenu != null) {
-            configMenu.gameObject.SetActive(true);
-            GetComponent<CanvasGroup>().blocksRaycasts = false;
-        }
+        StartCoroutine(OpenConfigMenu());
     }
 
     public void onCloseConfigMenu() {
-        Debug.Log("Config. Window close call!");
-        if (configMenu != null) {
-            configMenu.gameObject.SetActive(false);
-            GetComponent<CanvasGroup>().blocksRaycasts = true;
-        }
+        StartCoroutine(CloseConfigMenu());
     }
 
     void hideMenuAndStartGame() {
@@ -135,5 +131,55 @@ public class MenuControl : MonoBehaviour {
         }
         alpha = 1;
         GetComponent<CanvasGroup>().blocksRaycasts = true; // detecta cliques no menu após FADEIN
+    }
+
+    IEnumerator OpenConfigMenu() {
+        if (configMenu != null) {
+            configMenu.gameObject.SetActive(true);
+            GetComponent<CanvasGroup>().blocksRaycasts = false;
+        }
+        RectTransform window = (RectTransform)configMenu.Find("Canvas/Window");
+        Debug.Log(window.name);
+        window.anchoredPosition = Vector2.up * windowHidePos;
+        yield return ShowConfigWindow(window);
+        yield return null;
+    }
+
+    IEnumerator ShowConfigWindow(RectTransform window) {
+        Image background = window.parent.Find("Background").GetComponent<Image>();
+        background.color = new Color(20, 34, 59, 0);
+        while (window.anchoredPosition.y > 0) {
+            window.anchoredPosition = window.anchoredPosition - (Vector2.up * Time.deltaTime * windowDropSpeed);
+            background.color = new Color(20/255f, 34/255f, 59/255f, (windowHidePos - window.anchoredPosition.y)/windowHidePos * windowAlphaMeta);
+            yield return null;
+        }
+        window.anchoredPosition = Vector2.zero;
+    }
+
+    IEnumerator ConfigMenuFadeIn() {
+        yield return null;
+    }
+
+    IEnumerator CloseConfigMenu() {
+        RectTransform window = (RectTransform)configMenu.Find("Canvas/Window");
+        Debug.Log(window.name);
+        yield return HideConfigWindow(window);
+        if (configMenu != null) {
+            configMenu.gameObject.SetActive(false);
+            GetComponent<CanvasGroup>().blocksRaycasts = true;
+        }
+    }
+
+    IEnumerator ConfigMenuFadeOut() {
+        yield return null;
+    }
+
+    IEnumerator HideConfigWindow(RectTransform window) {
+        Image background = window.parent.Find("Background").GetComponent<Image>();
+        while (window.anchoredPosition.y < windowHidePos) {
+            window.anchoredPosition = window.anchoredPosition + (Vector2.up * Time.deltaTime * windowDropSpeed);
+            background.color = new Color(20 / 255f, 34 / 255f, 59 / 255f, windowAlphaMeta - ((window.anchoredPosition.y / windowHidePos) * windowAlphaMeta));
+            yield return null;
+        }
     }
 }

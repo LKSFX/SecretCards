@@ -8,7 +8,7 @@ public class GameManager : Singleton<GameManager> {
 
     private bool _isMusicOn;
     private bool _isSoundOn;
-    private readonly string cfgPath = "Canvas/WindowDynamic";
+    private readonly string cfgPath = "Canvas/Window/WindowDynamic";
     public bool IsMenuPresent { get { return MainMenu != null; } }
     public readonly string HighscoreIndex = "PlayerHighscore0";
     public MenuControl MainMenu { get; private set; }
