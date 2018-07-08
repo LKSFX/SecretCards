@@ -11,13 +11,14 @@ public class MenuControl : MonoBehaviour {
     Scene sceneGame;
     private float windowHidePos = 1500f;
     private float windowAlphaMeta = .5f;
-    private int windowDropSpeed = 1500;
+    private int windowDropSpeed = 2300;
 
     // Use this for initialization
     void Start() {
         GameManager.Instance.setMenuControl(this);
         SceneManager.sceneLoaded += OnSceneLoaded;
         updateHighscoreIcon();
+        StartCoroutine(Intro());
     }
 
     // Update is called once per frame
@@ -99,7 +100,7 @@ public class MenuControl : MonoBehaviour {
     public void updateHighscoreIcon() {
         // precisa ser corretamente implementado
         //TODO
-        transform.Find("Buttons/Scores/Counter").GetComponent<Text>().text = "<b>" + PlayerPrefs.GetInt(GameManager.Instance.HighscoreIndex, 0) + "</b>";
+        transform.Find("Buttons/BtContainer/Scores/Counter").GetComponent<Text>().text = "<b>" + PlayerPrefs.GetInt(GameManager.Instance.HighscoreIndex, 0) + "</b>";
     }
 
     public T getComponentInConfigWindow<T>(string path) where T : Component {
@@ -133,6 +134,24 @@ public class MenuControl : MonoBehaviour {
         GetComponent<CanvasGroup>().blocksRaycasts = true; // detecta cliques no menu após FADEIN
     }
 
+    IEnumerator Intro() {
+        GetComponent<CanvasGroup>().blocksRaycasts = false;
+        Image title = transform.Find("Static/Title").GetComponent<Image>();
+        title.color = new Color(1, 1, 1, 0);
+        float yy = -1000;
+        RectTransform container = (RectTransform)transform.Find("Buttons/BtContainer");
+        container.anchoredPosition = Vector2.up * yy;
+        while (container.anchoredPosition.y < 0) {
+            container.anchoredPosition = container.anchoredPosition + Vector2.up * Time.deltaTime * windowDropSpeed * .3f;
+            title.color = new Color(1, 1, 1, (-yy + container.anchoredPosition.y)/-yy );
+            yield return null;
+        }
+        container.anchoredPosition = Vector2.zero;
+        GetComponent<CanvasGroup>().blocksRaycasts = true;
+    }
+
+    #region ConfigMenu
+
     IEnumerator OpenConfigMenu() {
         if (configMenu != null) {
             configMenu.gameObject.SetActive(true);
@@ -156,10 +175,6 @@ public class MenuControl : MonoBehaviour {
         window.anchoredPosition = Vector2.zero;
     }
 
-    IEnumerator ConfigMenuFadeIn() {
-        yield return null;
-    }
-
     IEnumerator CloseConfigMenu() {
         RectTransform window = (RectTransform)configMenu.Find("Canvas/Window");
         Debug.Log(window.name);
@@ -170,10 +185,6 @@ public class MenuControl : MonoBehaviour {
         }
     }
 
-    IEnumerator ConfigMenuFadeOut() {
-        yield return null;
-    }
-
     IEnumerator HideConfigWindow(RectTransform window) {
         Image background = window.parent.Find("Background").GetComponent<Image>();
         while (window.anchoredPosition.y < windowHidePos) {
@@ -182,4 +193,6 @@ public class MenuControl : MonoBehaviour {
             yield return null;
         }
     }
+
+    #endregion
 }
