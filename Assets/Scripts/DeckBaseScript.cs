@@ -140,7 +140,7 @@ public class DeckBaseScript : MonoBehaviour {
         RectTransform bar0 = (RectTransform)hud.transform.Find("StatsStatic/Bar");
         RectTransform bar1 = (RectTransform)hud.transform.Find("StatsNonStatic/Bar");
         RectTransform header = (RectTransform)hud.transform.Find("StatsStatic/Header");
-
+        gameIntroDirector.Stop();
         bool completed = false;
         float spd = 1000;
         while (!completed) {
@@ -156,7 +156,6 @@ public class DeckBaseScript : MonoBehaviour {
         if (GameManager.Instance.IsMenuPresent) {
             // quando o MENU estiver presente
             GameManager.Instance.MainMenu.showMenu();
-            gameIntroDirector.Stop();
             hud.setHidePosition(); // esconde barra de vida e header
             transform.position = new Vector3(1000, 0, 0); // esconde cartas
             gameReset(false);

@@ -1520,7 +1520,7 @@ MonoBehaviour:
   gameIntroDirector: {fileID: 955114569}
   isDebug: 0
   isTestCanvasOn: 1
-  isGamePresentationOn: 1
+  isGamePresentationOn: 0
 --- !u!114 &577811353
 MonoBehaviour:
   m_ObjectHideFlags: 0
