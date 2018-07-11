@@ -112,6 +112,44 @@ public class DeckBaseScript : MonoBehaviour {
         foreach (CardScript card in deck)
             card.setTriggerDestroy();
         yield return new WaitForSeconds(3f);
+
+        if (isGamePresentationOn || GameManager.Instance.IsMenuPresent) {
+            StartCoroutine(OutPresentation());
+        } else {
+            // reinicia cartas
+            foreach (CardScript card in deck)
+                card.setResetCard();
+            gameReset();
+        }
+
+        //if (GameManager.Instance.IsMenuPresent) {
+        //    // quando o MENU estiver presente
+        //    GameManager.Instance.MainMenu.showMenu();
+        //    gameIntroDirector.Stop();
+        //    hud.setHidePosition(); // esconde barra de vida e header
+        //    transform.position = new Vector3(1000, 0, 0); // esconde cartas
+        //    gameReset(false);
+        //} else {
+        //    // reinicia variáveis e inicia jogo
+        //    gameReset();
+        //}
+    }
+
+    IEnumerator OutPresentation() {
+
+        RectTransform bar0 = (RectTransform)hud.transform.Find("StatsStatic/Bar");
+        RectTransform bar1 = (RectTransform)hud.transform.Find("StatsNonStatic/Bar");
+        RectTransform header = (RectTransform)hud.transform.Find("StatsStatic/Header");
+
+        bool completed = false;
+        float spd = 1000;
+        while (!completed) {
+            bar0.offsetMin = new Vector2(bar0.offsetMin.x, bar0.offsetMin.y - Time.deltaTime * spd);
+            bar1.offsetMin = new Vector2(bar1.offsetMin.x, bar1.offsetMin.y - Time.deltaTime * spd);
+            header.offsetMax = new Vector2(header.offsetMax.x, header.offsetMax.y + Time.deltaTime * spd);
+            completed = bar0.offsetMin.y < -1049;
+            yield return null;
+        }
         // reinicia cartas
         foreach (CardScript card in deck)
             card.setResetCard();
@@ -121,9 +159,9 @@ public class DeckBaseScript : MonoBehaviour {
             gameIntroDirector.Stop();
             hud.setHidePosition(); // esconde barra de vida e header
             transform.position = new Vector3(1000, 0, 0); // esconde cartas
-
             gameReset(false);
-        } else {
+        }
+        else {
             // reinicia variáveis e inicia jogo
             gameReset();
         }
@@ -185,6 +223,7 @@ public class DeckBaseScript : MonoBehaviour {
                 // gera efeito de match em ambas as cartas assinalando PAR completo
                 lastCardChoosed.setTriggerMatch();
                 card.setTriggerMatch();
+                GameManager.Instance.Sound.playMatch();
                 lastCardChoosed = null; // desassocia última escolha
             } else {
                 // cartas não formam o par
@@ -194,7 +233,7 @@ public class DeckBaseScript : MonoBehaviour {
                     // se o HUD estiver presente
                     hud.updateLives(lives);
                 }
-                
+                GameManager.Instance.Sound.playWrong();
                 if (lives < 1) {
                     // GAME OVER 
                     // jogador ficou sem vida
@@ -279,6 +318,8 @@ public class DeckBaseScript : MonoBehaviour {
             sortingAlert.gameObject.SetActive(active);
         }
     }
+
+    #region APRESENTAÇÕES
 
     // chance de REVIRAVOLTA
     IEnumerator TurnaroundChance() {
@@ -411,6 +452,8 @@ public class DeckBaseScript : MonoBehaviour {
         Invoke("unlockClick", 0.2f); // desbloqueia tela para cliques
         updateAlertTestCanvas(false, "");
     }
+
+    #endregion
 
     #region hideAndShow
 

@@ -17,9 +17,12 @@ public class GameManager : Singleton<GameManager> {
     private float escWait = .5f;
     private int exitAsks;
 
+    public SoundManager Sound { get; private set; }
+
 	// Use this for initialization
 	void Awake () {
-		
+        Sound = gameObject.AddComponent<SoundManager>();
+        transform.position = Vector3.up * 10000;
 	}
 
     void Update() {
