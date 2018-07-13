@@ -167,8 +167,11 @@ public class MenuControl : MonoBehaviour {
     IEnumerator ShowConfigWindow(RectTransform window) {
         Image background = window.parent.Find("Background").GetComponent<Image>();
         background.color = new Color(20, 34, 59, 0);
+        float dropTime = windowHidePos / windowDropSpeed;
+        float time = 0;
+        Vector2 init = window.anchoredPosition;
         while (window.anchoredPosition.y > 0) {
-            window.anchoredPosition = window.anchoredPosition - (Vector2.up * Time.deltaTime * windowDropSpeed);
+            window.anchoredPosition = Vector2.Lerp(init, Vector2.zero, (time += Time.deltaTime)/dropTime);
             background.color = new Color(20/255f, 34/255f, 59/255f, (windowHidePos - window.anchoredPosition.y)/windowHidePos * windowAlphaMeta);
             yield return null;
         }

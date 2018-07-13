@@ -25,6 +25,15 @@ public class GameManager : Singleton<GameManager> {
         transform.position = Vector3.up * 10000;
 	}
 
+    void Start() {
+        loadConfig();
+    } 
+
+    void loadConfig() {
+        IsMusicOn = PlayerPrefs.GetInt("IsMusicOn", 1) > 0;
+        IsSoundOn = PlayerPrefs.GetInt("IsSoundOn", 1) > 0;
+    }
+
     void Update() {
         // QUIT: verifica clique sobre botão return 
         escTime += Time.deltaTime;
@@ -48,6 +57,10 @@ public class GameManager : Singleton<GameManager> {
     public bool IsMusicOn {
         get { return _isMusicOn; }
         set {
+            if (value != _isMusicOn) {
+                PlayerPrefs.SetInt("IsMusicOn", value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
             _isMusicOn = value;
             if (IsMenuPresent) {
                 UnityEngine.UI.Toggle toggle = MainMenu.getComponentInConfigWindow<UnityEngine.UI.Toggle>
@@ -58,10 +71,15 @@ public class GameManager : Singleton<GameManager> {
             }
         }
     }
-    public bool IsSoundOn { get { return _isSoundOn; }
+    public bool IsSoundOn {
+        get { return _isSoundOn; }
         set {
+            if (value != _isSoundOn) {
+                PlayerPrefs.SetInt("IsSoundOn", value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
+            _isSoundOn = value;
             if (IsMenuPresent) {
-                _isSoundOn = value;
                 UnityEngine.UI.Toggle toggle = MainMenu.getComponentInConfigWindow<UnityEngine.UI.Toggle>
                     (cfgPath + "/SoundToggle/" + (value ? "ToggleOn" : "ToggleOff"));
                 if (!toggle.isOn) { // certifica que o menu mostre corretamente o seletor

@@ -237,6 +237,7 @@ public class DeckBaseScript : MonoBehaviour {
                     // GAME OVER 
                     // jogador ficou sem vida
                     StartCoroutine("GameEnd");
+                    GameManager.Instance.Sound.playLose();
                     return;
                 }
                 // cartas são ocultadas novamente após intervalo
@@ -294,6 +295,7 @@ public class DeckBaseScript : MonoBehaviour {
             score += lives; // vidas remanescentes tornam-se pontos
             lives += 1; // ganha um ponto ganho pela rodada
             updateAlertTestCanvas(true, "You Win");
+            GameManager.Instance.Sound.playWin();
             showCards(); // revela a carta curinga 
             lockClick();
             Invoke("resetDeck", 2);
